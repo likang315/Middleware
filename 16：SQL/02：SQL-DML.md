@@ -70,7 +70,60 @@
 
 ###### 表的概念
 
-- 
+- 永久表：使用create table 语句创建的表；
+- 临时表：子查询所返回的表；
+- 虚拟表：使用create view 子句锁创建的视图；
+  - 视图：存储在数据字典中的查询，它的行为变现得像一个表，但实际上并不拥有任何数据；
+
+###### 定义表表名
+
+- 在表名后直接加别名，用于多表连接，和联表查询时选择字段；
+
+##### 05：where 子句
+
+- 用于结果集中过滤掉不需要的行；
+- 在该子句中同时使用and 和 or 操作符时，需要**使用括号来对条件分组**；
+
+##### 06：order by  子句
+
+- 用于对结果集中的**原始列数据**或是**列数据计算的表达式结果**进行排序；
+- 按照**多字段排序**时，首先按照第一个字段排序，当第一个字段有重复值时才会按照第二个字段排序方式进行排序
+- 在排序时，可以通过关键字 ASC 和 DESC 指定是升序还是降序。由于默认情况下是升序排序，因此想要降序排序时，加上DESC 关键字即可。
+- 根据表达式排序：ORDER BY right(doc_id, 3)；
+- 在排序中NULL值被认为是最大值;
+
+#### 07：过滤
+
+##### 构键条件
+
+###### and 、or 操作符
+
+- and：所有条件必须全部为 true 才可以包含在结果集中；
+- or：只要有一个条件为true，就会包含在结果集中；
+
+###### NOT 操作符（少用）
+
+- AND NOT（ column_1 = A OR column_2 = B）
+- 等价于：AND column_1 != A OR column_2 != B
+
+##### 条件类型
+
+###### 相等条件
+
+- column = B
+
+###### 不等条件
+
+- column != B  
+- column <> B
+
+###### 范围条件
+
+- 62
+
+
+
+
 
 
 
@@ -95,17 +148,6 @@
      - ALL：所有的
      - select * from stu where class='1' and age > any (select age from stu where class='2')；
      - 查询出01班中，年龄大于 02班任意一个的同学
-
-##### 04：DISTINCT：去重
-
-- 
-
-##### 05：QUERY：查找
-
-- 投影(projector)：部分列组成的新的集合 
-  - SELECT name as Name,sex,age FROM emp; 
-- 选择(selector)：部分行组成新的集合
-  - SELECT * FROM stu WHERE id<10;
 
 ##### 06：GROUP BY：分组
 
@@ -142,17 +184,6 @@
 - COUNT( )：对给定字段的记录进行统计 
   - COUNT（*）：统计这个表有多少记录，有时候返回long，有时候返回 BigInteger，配合进行
   - SELECT price, **count(*) AS number** FROM tablename GROUP BY price；
-
-##### 07：ORDER BY：排序
-
-​	将结果集按照指定的字段，对该字段的值进行升序或者降序排序
-
-- ASC：升序，默认的不用写（ascending order） 
-- DESC：降序（descending order）
-  - 按照**多字段排序**时，首先按照第一个字段排序，当第一个字段有重复值时才会按照第二个字段排序方式进行排序
-  - 多字段排序时，每个字段都可以单独的指定排序方式
-    -  SELECT * FROM stu1 ORDER BY age DESC，id ASC;
-  - 在排序中NULL值被认为是最大值
 
 ##### 08：WHERE：限制条件
 
