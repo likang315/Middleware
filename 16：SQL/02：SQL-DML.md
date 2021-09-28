@@ -150,6 +150,50 @@
 
 ##### 08：多表查询
 
+###### 笛卡尔积
+
+- 直接用 JOIN  将两个表的数据简单连接到一起；
+
+###### 内连接
+
+- INNER JOIN  ... ON 连接条件
+  - 只有符合的才出现在结果集里，没有匹配上（某个表为NULL，使用外连接）会剔除；
+  - 如果两个表的列名相同可以使用 USING 代替 ON
+  - INNER JOIN ... USING(fieldName)
+
+###### 连接多张表
+
+- 多表的连接视为“滚雪球” ，前两个表形成一个开始滚动的“雪球”，而之后的每个表都在“雪球” 滚动时依附在上面。
+- 中间结果表再去连接其他表；
+
+###### 将子查询结果作为查询表
+
+- INNER JOIN （SELECT * FROM tableName）a
+
+###### 自连接
+
+- 不仅可以在同一查询中多次包含同一个表，还可以对表自身进行连接。
+
+- 同一张人员表表，存储了上下级关系；
+
+- ```sql
+  SELECT e.fname, e.l name, e mgr.fname mgr_fname, e_mgr.l name mgr_l name
+  FROM employee e INNER JOIN employee e_mgr ON e.superior_emp_id = e mgr.emp_id;
+  ```
+
+###### 相等连接和不等连接
+
+- ON a.start_time >= b.start_time;
+  - 查询的两个表可能并**没有外键关联**；
+- ON a.id != b.id
+  - 对表自身使用不等连接；
+
+###### 连接条件和过滤条件
+
+- ON 子句使用连接条件，WHERE 使用过滤条件，可以灵活的放置条件的位置；
+
+##### 09：使用集合
+
 - 
 
 
@@ -158,23 +202,23 @@
 
 
 
-- WHERE子句：添加限制条件，只会将满足条件的记录查询出来
-  1. <,>=,<=,<>等价于!=
-  2. AND，OR，NOT，AND 优先级高于 OR，可以通过括号来提高优先级
-  3. IS NULL ,IS NOT NULL ：判断是不是为空
-  4. IN，NOT IN ：判断在不在列表中[]，常用来判断子查询的结果
-     - WHERE id IN (1,25)；
-     - IN 后不能接子查询，并且常量数尽量不超过200个；
-  5. BETWEEN values1 AND values2 ：判断值在values1和values2之间
-  6. LIKE（模糊查询）：只知道其中某个字符
-     1. %：任意个字符
-     2. _ ：一个字符 
-     3. name LIKE %lisi%
-  7. ANY，ALL：常用于子查询
-     - ANY：任意一个
-     - ALL：所有的
-     - select * from stu where class='1' and age > any (select age from stu where class='2')；
-     - 查询出01班中，年龄大于 02班任意一个的同学
+
+
+
+
+
+
+
+
+
+
+
+
+7. ANY，ALL：常用于子查询
+   - ANY：任意一个
+   - ALL：所有的
+   - select * from stu where class='1' and age > any (select age from stu where class='2')；
+   - 查询出01班中，年龄大于 02班任意一个的同学
 
 ##### 06：GROUP BY：分组
 
