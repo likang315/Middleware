@@ -271,9 +271,56 @@
     select CONCAT('the name is', name, 'and age is', age) desc;
     ```
 
-- **INSERT()**：117
+- **INSERT('原始字符串'， 开始操作位置，需要替换的字符数，'替换字符串')**：
 
+  - ```sql
+    select INSERT('goofbye world', 1, 7, 'hello');
+    # hello world
+    ```
 
+- **SUBSTRING（'字符串'，开始位置，截取字符数）**：截取子串；
+
+###### 使用数值数据
+
+- 如果数值列的精度大于所在列的指定长度，那么在存储时发生取整操作；
+
+- ```sql
+  select 4 / 5 * 2;
+  ```
+
+###### 算术函数
+
+- **MOD(A, B)**：A除B的余数；
+- **POW(A, B)**：求A的B的幂次方；
+
+###### 控制精度函数
+
+- **CEIL()**：向上截取整型数字；
+
+- **FLOOR()**：向下截取整型数字；
+
+- **ROUND()**：四舍五入截取整型数字；
+
+  - 可选的第二个参数：保留几位小数；
+
+  - ```sql
+    select ROUND(3.500001)；
+    select ROUND(3.500001, 3);
+    ```
+
+- **TRUNCATE()**：制定保留几位小数，但不进行进位；
+
+  - ```sql
+    select TRUNCATE(3.500001, 3)；
+    ```
+
+###### 处理有符号数
+
+- **ABS（）**：取绝对值；
+
+###### 使用时间数据
+
+- 
 
 
 
@@ -350,13 +397,6 @@
 - SELECT * FROM emp WHERE id > 3 LIMIT 5; 
   - 当第一个值比较大时，尽量使用id 的方式高效分页，否则可能会逐行扫描到指定数值后，再进行分页，效率较慢。
   - **OFFSET**：偏移量的下一个值开始取；
-
-##### 10：UNION、UNION ALL：合并结果集
-
-- 用于**合并两个或多个 SELECT 语句的结果集**，UNION 命令只会选取不同的值
-- UNION 内部的 SELECT 语句必须拥有相似的列对应
-- SELECT column_name(s) FROM table_name1  UNION ALL  SELECT column_name(s) FROM table_name2；
-- UNION ALL：命令会列出所有的值，不去重，效率高；
 
 ##### 11：多表查询
 
