@@ -320,7 +320,33 @@
 
 ###### 使用时间数据
 
-- 
+- 查看时间设置
+
+  - ```sql
+    SELECT @@global.time_zone, @@session.time_zone;
+    ```
+
+- 表示日期数据的字符串
+
+  - 服务器提供日期组件自动转换；
+
+- 产生日期的函数
+
+  - str_to_date('字符串'， '日期格式化符')
+
+  - ```sql
+    SELECT STR_TO_DATE('2017-01-06 10:20:30','%Y-%m-%d');
+    ```
+
+- 获取当前时间
+
+  - ```sql
+    SELECT current_date, current_time, current_timestamp
+    ```
+
+###### 操作日期数据
+
+- 129
 
 
 
