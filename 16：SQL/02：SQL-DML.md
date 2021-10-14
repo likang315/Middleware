@@ -218,7 +218,7 @@
   - 包含3个以上的查询语句时，他们以自顶向下的顺序被解析执行；
   - 可以用括号明确他们的执行顺序；
 
-##### 10：数据的生成、转换和操作
+##### 10：字符串数据
 
 ###### 使用字符串数据
 
@@ -280,6 +280,8 @@
 
 - **SUBSTRING（'字符串'，开始位置，截取字符数）**：截取子串；
 
+##### 11：数值数据
+
 ###### 使用数值数据
 
 - 如果数值列的精度大于所在列的指定长度，那么在存储时发生取整操作；
@@ -318,6 +320,8 @@
 
 - **ABS（）**：取绝对值；
 
+##### 12：时间数据
+
 ###### 使用时间数据
 
 - 查看时间设置
@@ -328,11 +332,13 @@
 
 - 表示日期数据的字符串
 
-  - 服务器提供日期组件自动转换；
+  - 服务器**提供日期组件自动转换**；
 
 - 产生日期的函数
 
   - str_to_date('字符串'， '日期格式化符')
+
+  - 转换成datetime类型；
 
   - ```sql
     SELECT STR_TO_DATE('2017-01-06 10:20:30','%Y-%m-%d');
@@ -346,7 +352,73 @@
 
 ###### 操作日期数据
 
-- 129
+- **DATE_ADD(param1, param2)**
+
+  - 获取param1 在增加数量后的日期；
+
+  - param1: 日期值；
+
+  - param2: INTERVAL 所需增加的数量以及时间间隔类型；
+
+    - Day: 天数；
+    - Month: 月份；
+    - Hour_second: 小时数、分钟数和秒数，中间用“：” 隔开
+
+  - 示例
+
+  - ```sql
+    SELECT current_date, date_add(current_date, INTERVAL 15 DAY);
+    ```
+
+- **LAST_DAY(param1)**
+
+  - 获取所传日期的当月最后一天；
+  - param1: 参数是一个时间类型；
+  - 返回一个Date类型；
+
+- **EXTRACT(param1)**
+
+  - 获取param1 中的时间属性；
+
+  - param1: 时间类型 FROM 时间
+
+  - ```sql
+    SELECT EXTRACT(YEAR FROM current_time) 
+    ```
+
+- **DATEDIFF(param1, param2)**
+
+  - 获取两个日期间隔；
+
+  - 只受年月日的影响，与时分秒无关；
+
+  - ```sql
+    SELECT DATEDIFF('2021-09-08 22:00:00', '2021-09-05 01:00:00')
+    ```
+
+##### 13：转换
+
+- **CAST(expr AS type)**
+
+  - 将expr 转换成type类型；
+
+  - ```sql
+    SELECT CAST('2019-08-29 16:50:21' AS DATE);
+    ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -371,42 +443,6 @@
    - ALL：所有的
    - select * from stu where class='1' and age > any (select age from stu where class='2')；
    - 查询出01班中，年龄大于 02班任意一个的同学
-
-##### 06：GROUP BY：分组
-
-- 将结果集按照指定的**字段值相同的记录分为一组**，常和分组函数联用；
-
-- 如果在以某字段为根据进行了分组之后，select 那个字段得到的不是这个字段的信息，而是这个字段的分组信息，如果不与聚合函数联合使用，只显示该组第一条记录；
-
-- 使用Select查询的列，在使用分组的语句中**要不包含在group by 字段中，要不包含在聚合函数中**。不然查询会报错。
-
-- ```sql
-  select stu.name, avg(s.math) as math, avg(s.chinese) as chinese
-  from score s INNER JOIN student stu
-  ON stu.id = s.student_id
-  group by stu.name;
-  ```
-  
-  - score 表中可能会有多条一个学生的成绩，求平均
-    - 先找到联表中符合限定条件的信息；
-    - 以group by 后的字段作为分组key；
-    - 进行聚合计算，最终显示也是key，字段名；
-  
-- **多列分组**：按照多列（字段A+字段B）合并后的值进行分组；
-
-- **HAVING 条件表达式**：用来限制分组后的显示，符合条件表达式的结果将被显示；
-  
-  - HAVING   COUNT(sex) >= 1;
-  
-- **WITH ROLLUP**：将会加上一条记录，这一条记录是上面所有记录的总和。
-
-###### 聚合函数
-
-- MAX（），MIN（）：求指定字段的最大值和最小值
-- AVG，SUM：求平均值和总和
-- COUNT( )：对给定字段的记录进行统计 
-  - COUNT（*）：统计这个表有多少记录，有时候返回long，有时候返回 BigInteger，配合进行
-  - SELECT price, **count(*) AS number** FROM tablename GROUP BY price；
 
 ##### 08：WHERE：限制条件
 
