@@ -148,51 +148,7 @@
 - IS NOT NULL
   - 写限定条件时，首先确定该字段为不为NULL ，防止忽略
 
-##### 08：多表查询
-
-###### 笛卡尔积
-
-- 直接用 JOIN  将两个表的数据简单连接到一起；
-
-###### 内连接
-
-- INNER JOIN  ... ON 连接条件
-  - 只有符合的才出现在结果集里，没有匹配上（某个表为NULL，使用外连接）会剔除；
-  - 如果两个表的列名相同可以使用 USING 代替 ON
-  - INNER JOIN ... USING(fieldName)
-
-###### 连接多张表
-
-- 多表的连接视为“滚雪球” ，前两个表形成一个开始滚动的“雪球”，而之后的每个表都在“雪球” 滚动时依附在上面。
-- 中间结果表再去连接其他表；
-
-###### 将子查询结果作为查询表
-
-- INNER JOIN （SELECT * FROM tableName）a
-
-###### 自连接
-
-- 不仅可以在同一查询中多次包含同一个表，还可以对表自身进行连接。
-
-- 同一张人员表表，存储了上下级关系；
-
-- ```sql
-  SELECT e.fname, e.l name, e mgr.fname mgr_fname, e_mgr.l name mgr_l name
-  FROM employee e INNER JOIN employee e_mgr ON e.superior_emp_id = e mgr.emp_id;
-  ```
-
-###### 相等连接和不等连接
-
-- ON a.start_time >= b.start_time;
-  - 查询的两个表可能并**没有外键关联**；
-- ON a.id != b.id
-  - 对表自身使用不等连接；
-
-###### 连接条件和过滤条件
-
-- ON 子句使用连接条件，WHERE 使用过滤条件，可以灵活的放置条件的位置；
-
-##### 09：使用集合
+##### 08：使用集合
 
 ###### 前置条件
 
@@ -218,7 +174,7 @@
   - 包含3个以上的查询语句时，他们以自顶向下的顺序被解析执行；
   - 可以用括号明确他们的执行顺序；
 
-##### 10：字符串数据
+##### 09：字符串数据
 
 ###### 使用字符串数据
 
@@ -280,7 +236,15 @@
 
 - **SUBSTRING（'字符串'，开始位置，截取字符数）**：截取子串；
 
-##### 11：数值数据
+- **COALESCE**
+
+  - COALESCE 函数需要许多参数，并返回第一个非NULL参数。如果所有参数都为NULL，则COALESCE函数返回`NULL`；
+
+  - ```sql
+    COALESCE(value1,value2,...); 
+    ```
+
+##### 10：数值数据
 
 ###### 使用数值数据
 
@@ -320,7 +284,7 @@
 
 - **ABS（）**：取绝对值；
 
-##### 12：时间数据
+##### 11：时间数据
 
 ###### 使用时间数据
 
@@ -396,7 +360,17 @@
     SELECT DATEDIFF('2021-09-08 22:00:00', '2021-09-05 01:00:00')
     ```
 
-##### 13：转换
+- **TIMESTAMPDIFF**
+
+  - 计算时间差
+
+  - 可以计算day、hour、minute
+
+  - ```sql
+    SELECT TIMESTAMPDIFF(DAY, create_time, update_time)
+    ```
+
+##### 12：转换
 
 - **CAST(expr AS type)**
 
@@ -420,36 +394,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7. ANY，ALL：常用于子查询
-   - ANY：任意一个
-   - ALL：所有的
-   - select * from stu where class='1' and age > any (select age from stu where class='2')；
-   - 查询出01班中，年龄大于 02班任意一个的同学
-
-##### 08：WHERE：限制条件
-
-- WHERE ：不能使用聚合函数作为过滤条件，原因是过滤时机不对，子查询；
-- WHERE：是在数据库检索表中数据时，对数据**逐行过滤**以决定是否查询该数据是否使用的，所以WHERE用来**确定结果集**的数据的，聚合函数**是从结果集中，并且分组完毕才进行过滤的**，由此可见这个过滤时机是在WHERE之后进行的，所以**聚合函数的过滤条件**要在HAVING子句中使用， HAVING必须在GROUP BY之后；
-- SELECT dep_id,count(dep_id) AS count FROM emp GROUP BY dep_id **HAVING count(dep_id)>1**；
-
 ##### 09：LIMIT：分页查询
 
 - SELECT * FROM emp LIMIT 2;      从第一条开始，查询三条，实际是：0,3
@@ -459,38 +403,6 @@
 - SELECT * FROM emp WHERE id > 3 LIMIT 5; 
   - 当第一个值比较大时，尽量使用id 的方式高效分页，否则可能会逐行扫描到指定数值后，再进行分页，效率较慢。
   - **OFFSET**：偏移量的下一个值开始取；
-
-##### 11：多表查询
-
-​	从多张表中查询信息，关联查询的重点与这些表中的记录的对应关系，这个关系也称**连接条件**，N张表就有N-1个连接条件；
-
-- 当两张表有相同字段时，SELECT子句中必须明确指定该字段来自那张表，在关联查询中，表名也可以有别名，在表名其后直接写，可以简化语句的复杂度
-- 关联查询要添加连接条件，否则会产生**笛卡尔积它是一个无意义的结果集**，它的记录数是与**所有参与查询的表的记录数乘积的结果**，可能会出现内存溢出；
-- SELECT e.id,e.name FROM emp e INNER JOIN dep d ON e.dep_id=d.dep_id；
-
-##### 12：关联查询【连接查询】
-
-![](https://github.com/likang315/Middleware/blob/master/Mysql%EF%BC%8CInnoDB/InnoDB/%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2.png?raw=true)
-
-###### 内连接：获取两个表中字段匹配关系的记录，可以省略 INNER 使用 JOIN，效果一样
-
-- FROM 表名1 表1对象 INNER JOIN 表2名 表2对象 ON 连接条件 WHERE 过滤条件
-- select e.id,d.dname as dep_name,e.name,e.sex,e.age FROM emp e **INNER JOIN** dep d **ON e.dep_id=d.id;**
-- 会自动优化成小表驱动大表，大表加索引提高查找速度；
-
-###### 外链接：所有数据都显示
-
-- **左外连（LEFT JOIN）**：以JOIN左侧作为驱动表，获取左表所有记录，即使右表没有对应匹配的记录的字段值，用NULL 填充
-- select e.id,d.dname as dep_name,e.name,e.sex,e.age from emp e **LEFT JOIN** dep d **ON** e.dep_id=d.id;
-- **右外连（RIGHT JOIN）**：与 LEFT JOIN 相反，用于获取右表所有记录，即使左表没有对应匹配的记录的字段值，用NULL填充
-- select e.id,d.dname as dep_name,e.name,e.sex,e.age from emp e **RIGHT JOIN** dep d **ON** e.dep_id=d.id;
-
-##### 13：count（1）和 count（*），count（字段） 的区别
-
-- 统计有多少条的记录
-- count( 1 )：忽略所有列，**用1 （常量）代表代码行**，在统计结果的时候，**包含值为NULL的记录**，除非是主键索引，否则和count( * )没有区别
-- count( * )：会自己优化指定到使用索引的字段，**包含值 null 的记录**；
-- count( 字段名 )：统计该字段在表中出现的次数，**不包含值为 null记录**；
 
 ##### 14：SQL 中单引号和双引号的区别
 
