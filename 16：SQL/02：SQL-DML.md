@@ -4,7 +4,7 @@
 
 [TOC]
 
-##### 0：DML 【insert、delete、update、select】
+##### 01：DML 【insert、delete、update、select】
 
 1. **INSERT INTO** 向表中插入数据
   
@@ -380,21 +380,66 @@
     SELECT CAST('2019-08-29 16:50:21' AS DATE);
     ```
 
+##### 13：条件逻辑
 
+###### case 表达式
 
+- 查找型case 表达式
 
+- ```sql
+  SELECT stu.name,
+         CASE
+             WHEN stu.sex = '1'
+                 THEN score.english
+             WHEN stu.sex = '2'
+                 THEN score.chinese
+             ELSE 'empty'
+         END score
+  FROM local_student_info stu
+           LEFT JOIN local_student_score score ON stu.stu_global_key = score.stu_global_key
+  ```
+  - END 子句是可选的；
+  - THEN 的表达式也可以是子查询；
 
+###### case 表达式的范例
 
+- 结果集转换
 
+  - 列转行（两列数据转为一行）；
 
+- 选择性聚合
 
+  - ```sql
+    # 统计人力数
+    SELECT SUM(CASE
+                   WHEN sex = '1'
+                       THEN 1
+                   WHEN sex = '2'
+                       THEN 2
+                   ELSE 0
+        END) count
+    FROM local_student_info;
+    ```
 
+- 存在性检查
 
+  - EXIST （）函数用于case 表达式；
 
+- 除零错误
 
+  - case 表达式判断为0时，指定为1；
 
+- null 值处理
 
-##### 09：LIMIT：分页查询
+  - ```sql
+    CASE 
+    	WHEN title IS NULL 
+    		THEN  'unknown'
+        ELSE title
+    END
+    ```
+
+##### 14：LIMIT：分页查询
 
 - SELECT * FROM emp LIMIT 2;      从第一条开始，查询三条，实际是：0,3
 - SELECT * FROM emp LIMIT 2, 4;  
@@ -403,11 +448,6 @@
 - SELECT * FROM emp WHERE id > 3 LIMIT 5; 
   - 当第一个值比较大时，尽量使用id 的方式高效分页，否则可能会逐行扫描到指定数值后，再进行分页，效率较慢。
   - **OFFSET**：偏移量的下一个值开始取；
-
-##### 14：SQL 中单引号和双引号的区别
-
-- 标准 SQL 中，**字符串使用的是单引号**，但是mysql做了兼容双引号也可以；
-- 若字符串中也有单引号，则使用两个单引号，转义的；
 
 ##### 15：EXPLAIN【SQL执行计划】
 
