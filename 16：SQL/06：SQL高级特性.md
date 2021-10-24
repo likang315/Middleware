@@ -2,6 +2,8 @@
 
 ------
 
+[TOC]
+
 ##### 01：事务
 
 ###### Mysql
@@ -19,6 +21,70 @@
 
 ##### 02：视图
 
-- p216
+- 一种简单的查询机制。不同于表，不涉及数据的存储（不会占用空间），先创建一个视图以供查询时使用；
+- 执行创建语句时，数据库只是**存储了视图的定义**，如果不查询就不会检索任何数据；
+- 数据库真正执行的sql 不是用户提交的sql，是**和视图定义结合的SQL语句**；
+- 视图可以像表一样写复杂SQL，联表等操作；
+
+###### 示例
+
+- 隐藏用户信息表中的性别
+
+- ```sql
+  # 创建的视图没有性别
+  CREATE VIEW local_student_info_vw
+              (
+               stu_global_key,
+               name,
+               class_id,
+               age
+                  )
+  AS
+  SELECT stu_global_key, concat('name: ', name) name, class_id, age
+  FROM local_student_info;
+  
+  # 检索机制
+  SELECT stu_global_key, name
+  FROM local_student_info_vw;
+  # 真正执行的
+  SELECT stu_global_key, concat('name: ', name) name
+  FROM local_student_info;
+  ```
+
+###### 使用场景
+
+1. 隐藏数据，数据安全；
+2. 用于中间表，且不会占用空间，还可以禁止查询底表；
+
+###### 可更新的视图
+
+- 在特定的规则下通过视图修改底表数据；
+
+  1. 没有使用聚合函数(max min() 和avg() 等)
+  2. 视图没有使用 用group by或 having子句; 
+  3. select 或 from 子句中不存在子查询，并且where子句的任何子查询都不引用 from 子句中的表; 
+  4. 视图没有使用union、union all 和 distinct;
+
+- 
+
+  ```sql
+  # 不能更新name 列，因为它使用了函数；
+  UPDATE local_student_info_vw
+  SET local_student_info_vw.stu_global_key = '爸爸'
+  WHERE local_student_info_vw.stu_global_key = 'xing'
+  ```
 
 ##### 03：元数据
+
+P242
+
+
+
+
+
+
+
+
+
+
+
