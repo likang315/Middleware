@@ -74,15 +74,31 @@
   WHERE local_student_info_vw.stu_global_key = 'xing'
   ```
 
-##### 03：元数据
+##### 03：元数据【数据的数据】
 
-P242
+- information_schema 数据库里所有的对象都是视图；
 
+- 查询tal 数据库的表信息
 
+  ```sql
+  SELECT *
+  FROM information_schema.TABLES
+  WHERE TABLE_SCHEMA = 'tal'
+  ```
 
-
-
-
+- | 视图名称                        | 相关信息                                                     | 作用                                   |
+  | ------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+  | SCHEMATA                        | 提供了当前mysql实例中所有数据库的信息。                      | show databases的结果取之此表。         |
+  | TABLES                          | 提供了关于数据库中的表的信息（包括视图）。详细表述了某个表属于哪个schema，表类型，表引擎，创建时间等信息 | show tables from schemaname            |
+  | COLUMNS                         | 提供了表中的列信息。详细表述了某张表的所有列以及每个列的信息 | show columns from schemaname.tablename |
+  | STATISTICS                      | 提供了关于表索引的信息                                       | show index from schemaname.tablename   |
+  | USER_PRIVILEGES（用户权限）表   | 给出了关于局权限的信息                                       |                                        |
+  | SCHEMA_PRIVILEGES（数据库权限） | 给出了关于方案（数据库）权限的信息                           |                                        |
+  | TABLE_PRIVILEGES（表权限）表    | 给出了关于表权限的信息。                                     |                                        |
+  | CHARACTER_SETS（字符集）表      | 提供了mysql实例可用字符集的信息                              | SHOW CHARACTER SET                     |
+  | COLLATIONS                      | 提供了关于各字符集的对照信息                                 |                                        |
+  | TABLE_CONSTRAINTS               | 描述了存在约束的表。以及表的约束类型                         |                                        |
+  | VIEWS                           | 给出了关于数据库中的视图的信息。                             |                                        |
 
 
 

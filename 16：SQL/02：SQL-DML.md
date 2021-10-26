@@ -398,6 +398,7 @@
   FROM local_student_info stu
            LEFT JOIN local_student_score score ON stu.stu_global_key = score.stu_global_key
   ```
+
   - END 子句是可选的；
   - THEN 的表达式也可以是子查询；
 
@@ -441,7 +442,7 @@
 
 ##### 14：LIMIT：分页查询
 
-- SELECT * FROM emp LIMIT 2;      从第一条开始，查询三条，实际是：0,3
+- SELECT * FROM emp LIMIT 2;      从第0条开始（没有数据），向下查询2条，实际是：0, 2
 - SELECT * FROM emp LIMIT 2, 4;  
   - 等价于：SELECT * FROM emp LIMIT  4  OFFSET 2;
   - 跳过第二条，从第3条开始，查询4条
