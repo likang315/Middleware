@@ -134,9 +134,10 @@ private void init(ThreadGroup g, Runnable target, String name,long stackSize,
 
 ##### 09：中断操作
 
-​	API中声明许多抛出InterruptedException的方法（例如Thread.sleep(long millis)方法）这些方法在抛出InterruptedException之前，Java虚拟机会先将**该线程的中断标识位清除**，然后抛InterruptedException，此时调用isInterrupted()方法将会返回false；
+- API中声明许多抛出InterruptedException的方法（例如Thread.sleep(long millis)方法）这些方法在抛出InterruptedException之前，Java虚拟机会先将**该线程的中断标识位清除**，然后抛InterruptedException，此时调用isInterrupted()方法将会返回false；
 
-- 通过isInterrupted()来进行判断是否被中断；
+
+- 通过isInterrupted()来进行判断当前线程是否被中断，如果是需要响应中断；
 - 通过调用静态方法Thread.interrupted() ，对当前线程的**中断标识位进行复位**；
 
 ###### 安全的中断任务操作
@@ -164,6 +165,7 @@ public class Shutdown {
         private volatile boolean on = true;
         @Override
         public void run() {
+            // 虽然给线程发出了中断信号，但程序中并没有响应中断信号的逻辑，所以程序不会有任何反应
             while (on && !Thread.currentThread().isInterrupted()) {
                 i++;
             }
