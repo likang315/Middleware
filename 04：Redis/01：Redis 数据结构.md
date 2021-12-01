@@ -216,35 +216,34 @@ typedef struct intset {
 
 - 整数集合不支持降级操作， 一旦对数组进行了升级， 编码就会一直保持升级后的状态。
 
-##### 06：压缩列表
-
-- 
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ##### 06：Zset
 
+- 跳跃表支持平均 O(log N) ，最坏 O(N) 复杂度的节点查找，在大部分情况下， 跳跃表的效率可以和平衡树相媲美， 并且因为跳跃表的实现比平衡树要来得更为简单
+- Redis 的跳跃表由 `redis.h/zskiplistNode` 和 `redis.h/zskiplist` 两个结构定义， 其中 `zskiplistNode` 结构用于表示跳跃表节点， 而 `zskiplist` 结构则用于保存跳跃表节点的相关信息；
 - Redis 中最优特色的数据结构，String 类型元素的**有序集合且唯一**；
 - 底层实现是：**跳表+Hash，跳表保证有序，Hash保证的查找高效**；
 - 该结构中每个元素都会关联一个**double类型的 score** ，redis 正是通过 score 来为集合中的成员进行从小到大的排序，zset的成员是唯一的，但分数(score)却可以重复，**skipList负责实现高性能排序，Hash负责实现高性能查找**；
-- ![](https://github.com/likang315/Middleware/blob/master/04%EF%BC%9ARedis/photos/skipList.png?raw=true)
-
+- <img src="https://github.com/likang315/Middleware/blob/master/04%EF%BC%9ARedis/photos/skipList.png?raw=true" style="zoom:67%;" />
+  - `header` ：指向跳跃表的表头节点。
+  - `tail` ：指向跳跃表的表尾节点。
+  - `level` ：记录目前跳跃表内，层数最大的那个节点的层数**（表头节点的层数不计算在内）**。
+  - `length` ：记录跳跃表的长度，也即是，跳跃表目前包含节点的数量（表头节点不计算在内）。
   - **层：**跳表的Level数组，每次创建一个新的结点时，**随机生成[1, 32] 的值作为数组的长度**，即层的高度；
   - **前进指针：**每一层都有一个指向表尾的指针，level[i].forward ，用于从表头方位节点；
   - **后退指针：**backward 用于从表尾方向访问节点；
   - **分值：**用一个double类型的浮点数，跳表中所有节点都按分值的从小到大排序；
   - **成员对象：**是一个指针，指向对象地址；
+
+
+
+
+
+
+
+
+
+
 
 ##### 07：BitMap
 
