@@ -8,6 +8,8 @@
 
 - 因为 Redis 是内存数据库， 它将自己数据库中的数据储存在内存里面， 所以如果不想办法将储存在内存中的数据库状态保存到磁盘里面， 那么一旦服务器进程退出， 服务器中的数据库的数据也会消失不见。
 - 两种持久化机制：RDB持久化和AOF持久化
+  - RDB：保存数据库的键值对信息；
+  - AOF：保存 Redis 服务器所执行的写命令；
 
 ##### 02：RDB 文件的创建和载入
 
@@ -69,8 +71,8 @@
 
 ###### dirty 计数器和 lastsave 属性
 
-- 除了savep a rarns 数组之外， 服务器状态还维持着一个 dirty 计数器， 以及一个 lastsave 属性；
-  - dirty计数器：记录距离上一次成功执行 SAV E命令或者BGSAV E命令之后， 服务器对数据库状态（服务器中的所有数据库） 进行了多少次修改。
+- 除了savepararns 数组之外， 服务器状态还维持着一个 dirty 计数器， 以及一个 lastsave 属性；
+  - dirty计数器：记录距离上一次成功执行 SAVE命令或者BGSAVE命令之后，服务器对数据库状态（服务器中的所有数据库） 进行了多少次修改。
   - lastsave 属性是一个UNIX 时间戳， 记录了服务器上一次成功执行SAVE命令或者BGSAVE命令的时间。
 
 ###### 检查保存条件是否满足
@@ -79,7 +81,7 @@
 
 ##### 05：RDB文件结构
 
-- <img src="/Users/likang/Code/Git/Middleware/04：Redis/photos/rdb_struct.png" style="zoom:67%;" />
+- <img src="/Users/likang/Code/Git/Middleware/04：Redis/photos/rdb_struct.png" style="zoom:45%;" />
 
 1. **redis：**RDB 文件的最开头是 REDIS 部分，这个部分的长度为 5 字节，保存着"REDIS" 五个字符。通过这五个字符,程序可以在载文件时， 快速检查所载入的文件是否RDB 文件。
 2. **db_version：** 长度为4字节，它的值是一个字符串表示的整数，这个整数记录了RDB文件的版本号；
@@ -105,6 +107,20 @@
   - ms 是一个8字节长的带符号整数， 记录着一个以毫秒为单位的UNIX时间戳， 这个时间戳就是键值对的过期时间。
 
 ###### value的编码
+
+- 列表对象为例：
+  - list_len：列表元素的个数；
+  - len1：第一个元素的长度；
+  - key：第一个元素；
+
+##### 06：分析RDB文件
+
+- 使用 OD 命令，分析RDN文件，该命令可以用指定的格式转存（dump）并打印输入文件；
+- od -c dump.rdb
+  - 使用ASCII码的方式打文件；
+- redis 自带 的RDB 文件检查工具：redis-check-dump；
+
+##### 07：AOF 持久化（Append Only File）的实现
 
 - 
 
