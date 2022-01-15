@@ -43,10 +43,11 @@
     - ssh-keygen -t rsa -C "likang315@163com"
       - 在本地生成公钥私钥,然后把公钥添加到Github 或者Gitlab，邮箱不同；
     - ssh-add ~/.ssh/github_rsa
+      - 将生成的密钥添加大ssh_agent的告诉缓存中；
     - ssh-add ~/.ssh/gitlab_rsa
-
+  
   - ~/.ssh/config  文件
-
+  
     ```shell
     # A账户
     Host  HostName的别名
@@ -59,11 +60,11 @@
     User yyy
     IdentityFile ~/.ssh/gitlab_rsa
     ```
-
+  
   - 查看 仓库中 .git/config 文件中的URL 是否正确；
-
+  
   - 分别给每个仓库配相应的用户信息；
-
+  
     - git config  user.name "Your Name"
     - git config  user.email "you@example.com"
     
