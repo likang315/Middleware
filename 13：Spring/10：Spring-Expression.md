@@ -82,3 +82,11 @@ private String mapAValue;
 private String list;
 ```
 
+##### 08：SPEL 操作枚举
+
+```java
+@LogRecord(code = "T(com.xupt.base.enums.LogRecordCodeEnum).ZERO.getCode()",
+            operateTime = "new java.util.Date()",
+            biz = "#msg")
+```
+

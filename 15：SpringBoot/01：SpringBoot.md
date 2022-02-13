@@ -47,7 +47,7 @@
 
      - 这个spring.factories文件也是一组一组的**key=value的形式**，其中一个key是EnableAutoConfiguration类的全类名，而它的value**是一个xxxxAutoConfiguration的类名的列表**，这些类名以逗号分隔；
 
-     - Spring启动的时候会扫描所有jar路径下的`META-INF/spring.factories`，将其文件包装成**Properties对象**，从Properties对象获取到key值为`EnableAutoConfiguration`的数据，然后添加到IOC容器里边。
+     - Spring启动的时候会扫描所有jar路径下的`META-INF/spring.factories`，将其文件包装成**Properties对象**，从Properties对象获取到key值为`EnableAutoConfiguration`的数据，然后通过`@Conditional`按需加载的配置类，添加到IOC容器里边。
 
    - @ComponentScan：若不配置scanBasePackages，则**默认从当前类开始下扫描，所以一般运行类放在基包下**
 

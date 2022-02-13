@@ -47,19 +47,28 @@
    2. 配置logback.xml
    
       ```xml
-      </configuration><?xml version="1.0" encoding="UTF-8"?>
+      <?xml version="1.0" encoding="UTF-8"?>
       <!-- slf4j日志配置文件 -->
       <configuration debug="true" scan="true" scanPeriod="30 seconds">
       
           <!-- 设置日志输出根目录 -->
-          <property name="app.name" value="h_datacube_wrapper"/>
+          <property name="app.name" value="zeus"/>
           <property name="log.dir" value="${catalina.base}/logs"/>
           <property name="encoding" value="UTF-8"/>
           <property name="pattern"
-                    value="%d{yyyy-MM-dd HH:mm:ss.SSS}[%level][%X{QTRACER}][%thread]    |    %C#%M:%L    |    %msg%n"/>
-          <property name="log.maxHistory" value="14"/>
+                    value="%d{yyyy-MM-dd HH:mm:ss.SSS}[%level][%thread] |  %C#%M:%L  |  %msg%n"/>
+          <!--归档时间最小单位有关，保留时间-->
+          <property name="log.maxHistory" value="7"/>
           <property name="log.level" value="info"/>
           <property name="log.maxSize" value="40GB" />
+      
+          <!--console-->
+          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder>
+                  <pattern>${pattern}</pattern>
+                  <charset>${encoding}</charset>
+              </encoder>
+          </appender>
       
           <!-- 只打印 INFO 级别以上的信息-->
           <appender name="info_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -80,6 +89,7 @@
       
           <!-- 只打印 ERROR 级别以上的信息 -->
           <appender name="error_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+              <!--高于此级别的日志才打印-->
               <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
                   <level>ERROR</level>
               </filter>
@@ -93,13 +103,6 @@
                   <param name="maxHistory" value="${log.maxHistory}"/>
                   <param name="totalSizeCap" value="${log.maxSize}"/>
               </rollingPolicy>
-          </appender>
-      
-          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-              <encoder>
-                  <pattern>${pattern}</pattern>
-                  <charset>${encoding}</charset>
-              </encoder>
           </appender>
       
           <appender name="dbAccessAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">>
@@ -125,17 +128,17 @@
           </appender>
       
           <!--自定义logger-->
-          <logger name="com.xupt.db.resource" level="warn" additivity="false">
+          <logger name="com.atlantis.zeus.base.db" level="warn" additivity="false">
               <level value="INFO" />
               <appender-ref ref="dbAccessAppender" />
           </logger>
       
-          <logger name="com.xupt.redis.storage" level="warn" additivity="false">
-              <level value="INFO" />
-              <appender-ref ref="redisAccessAppender" />
-          </logger>
+      <!--    <logger name="com.xupt.redis.storage" level="warn" additivity="false">-->
+      <!--        <level value="INFO" />-->
+      <!--        <appender-ref ref="redisAccessAppender" />-->
+      <!--    </logger>-->
       
-          <logger name="com.xupt" additivity="false">
+          <logger name="com.atlantis" additivity="false">
               <appender-ref ref="info_appender" />
               <appender-ref ref="error_appender" />
           </logger>

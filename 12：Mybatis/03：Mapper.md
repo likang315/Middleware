@@ -16,6 +16,8 @@
     <settings>
         <!--下划线自动转换为驼峰-->
         <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--日志打印-->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
     </settings>
     <!--配置别名-->
     <typeAliases>
@@ -517,13 +519,13 @@ Student queryStudentByName(@Param("name") String name)
 
 - **二级缓存配置**
 
-  1. 在MyBatis的配置文件中开启二级缓存；
+  1. 在MyBatis的配置文件中开启二级缓存【全局配置】；
 
      - ```xml
        <setting name="cacheEnabled" value="true"/>
        ```
 
-  2. 在MyBatis的映射XML中配置cache或者 cache-ref，用于声明这个namespace使用二级缓存；
+  2. 在MyBatis的映射XML中配置cache或者 cache-ref，用于声明这个namespace使用二级缓存【单一配置】；
 
      - ```xml
        <cache eviction="LRU" flushInterval="100000" size="1024" readOnly="true"/>
@@ -532,12 +534,10 @@ Student queryStudentByName(@Param("name") String name)
        - eviction：代表是缓存置换算法，默认：LRU(Least Recently Used)
          - LRU：最近最少使用，移除最长时间不用的对像
          - FIFO：先进先出，按对像进入缓存的顺序来移除它们
-
-       - flushInterval：缓存刷新间隔时间，单位为毫秒，如果不配置，那么当 SQL 被执行时，自动刷新缓存
+  - flushInterval：缓存刷新间隔时间，单位为毫秒，如果不配置，那么当 SQL 被执行时，自动刷新缓存
        - size：缓存数量，代表缓存最多可以存储多个对象，不宜设置过大，设置过大会导致内存溢出；
        - readOnly：只读，意味着缓存数据只能读取而不能修改，它的默认值为 false；
-
-     - 只针对此 select 语句的使用二级缓存，useCache="true"；
+       - 默认情况下，该 mapper 文件全部使用二级缓存，可以使用select元素的useCache="false"属性限制使用；
 
 - **缺陷**
 

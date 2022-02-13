@@ -13,7 +13,7 @@
 ##### 02：生产者概览
 
 1. 创建 **ProducerRecord** 对象开始，ProducerRecord 对象需要包含目标**主题和要发送的内容，还可以指定键或分区**。在发送ProducerRecord 对象时，生产者要先把**键和值对象序列化成字节数组**，这样它们才能够在网络上传输。
-2. 数据被传给**分区器**。如果之前在 ProducerRecord 对象里指定了分区，那么分区器就不会再做任何事情，直接把指定的分区返回。如果没有指定分区，那么分区器会根据ProducerRecord **对象的键来选择一个分区hash(key)**。选好分区以后，生产者就知道该往哪个主题和分区发送这条记录了。紧接着，这条记录**被添加到一个记录批次里**，这个批次里的所有消息会被发送到相同的主题和分区上。有一个**独立的线程负责把这些记录批次发送到相应的broker 上**。
+2. 数据被传给**分区器**。如果之前在 ProducerRecord 对象里指定了分区，那么分区器就不会再做任何事情，直接把指定的分区返回。如果没有指定分区，那么分区器会根据ProducerRecord **对象的键来选择一个分区hash(key)**。选好分区以后，生产者就知道该往哪个主题和分区发送这条记录了。紧接着，这条记录**被添加到一个记录批次里**，这个批次里的所有消息会被发送到相同的主题和分区上。有一个**独立的线程负责把这些记录批次发送到相应的broker上**。
 3. 服务器在收到这些消息时会**返回响应**。如果消息成功写入Kafka，就返回一个 **RecordMetaData** 对象，它包含了**主题和分区信息，以及记录在分区里的偏移量**。**如果写入失败，则会返回一个错误**。生产者在收到错误之后会尝试**重送**消息，几次之后如果还是失败，就返回错误信息。
 
 ##### 03：创建生产者
@@ -29,7 +29,7 @@
   - value.serializer 指定的类会将值序列化;
 
 ```java
-private Properties kafkaProps = new Properties();
+Properties kafkaProps = new Properties();
 kafkaProps.put("bootstrap.servers", "broker1:9092,broker2:9092");
 kafkaProps.put("key.serializer",
 "org.apache.kafka.common.serialization.StringSerializer"); 

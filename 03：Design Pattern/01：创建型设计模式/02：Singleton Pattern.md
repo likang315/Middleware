@@ -18,6 +18,9 @@
 public class Singleton {
     // volatile 会禁止指令重排序，否则会出现线程安全
     private volatile static Singleton instance;
+    private Singleton() {
+    } 
+
     public static Singleton getInstance() { 
         if (instance == null) {
             // 只允许一个类的实例进入

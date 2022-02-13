@@ -227,6 +227,7 @@ public interface Signature {
 ###### 示例
 
 - 自定义记录耗时注解，一般配合Ordered接口使用，多个注解时，定义先后顺序;
+- 注意：AOP 基于代理模式，只能拦截代理对象调用的方法；
 
 ```java
 @Around("@annotation(com.xupt.base.annotation.ElapsedTime)")

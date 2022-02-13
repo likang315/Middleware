@@ -342,7 +342,7 @@ public class KafkaConsumerListener {
   @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group.id}", 
                  containerFactory = "batchKafkaListenerContainerFactory")
   public void onMessage(List<ConsumerRecord<String, String>> record) {
-    log.error("KafkaConsumerListener: ", record.toString());
+    log.error("KafkaConsumerListener_onMessage: {}", record.toString());
   }
 }
 ```

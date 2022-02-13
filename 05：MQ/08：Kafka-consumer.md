@@ -95,7 +95,7 @@
   ###### 线程安全
 
   - 按照规则，一个消费者使用一个线程。如果要在同一个消费者群组里运行多个消费者，需要让每个消费者运行在自己的线程里；
-  - 例：**一次拉取50条消息，把消息的处理解析的过程，并发去处理，相当于起多个消费者去处理**；
+  - 例：**一次拉取50条消息，把消息的处理解析的过程，并发去处理，相当于把消费者任务交给业务线程并发处理**；
 
 ##### 05：消费者的配置
 
@@ -192,13 +192,13 @@
 
 - ```java
   consumer.commitAsync(new OffsetCommitCallback() {
-    public void onComplete(Map<TopicPartition,
-                           OffsetAndMetadata> offsets, Exception e) {
-      if (e != null) {
-        log.error("Commit failed for offsets {}", offsets, e);
-      	// retry
+      public void onComplete(Map<TopicPartition,
+                             OffsetAndMetadata> offsets, Exception e) {
+          if (e != null) {
+              log.error("Commit failed for offsets {}", offsets, e);
+              // retry
+          }
       }
-    }
   });
   ```
 
