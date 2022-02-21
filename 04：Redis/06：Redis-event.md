@@ -71,29 +71,36 @@
 
 ###### 实现
 
-- 
+- 服务器将所有时间事件都放在一个链表中，每当时间事件执行器运行时，它就遍历整个链表，查找所有已到达的时间事件，并调用相应的事件处理器。（已到达：指时间事件的when 属性记录的UNIX时间戳等于或小于当前时间的UNIX时间戳）。
+- 不会影响性能，因为正常情况下只有一个时间事件（severCron函数），几乎将链表退化成一个指针使用；
+  - 定期对自身的资源和状态进行检查和调整，从而确保服务器可以长期、稳定地运行； 
 
 
+##### 04：事件的调度与执行
 
+- 因为服务器中同时存在文件事件和时间事件两种事件类型，所以服务器必须对这两种事件进行调度，决定何时应处理文件事件，何时又应处理时间事件；
 
+- 事件的调度和执行由ae.c/aeProcessEvents 函数负责；
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- ```c++
+  def aeProcessEven七s ( ) :
+  # 获取到达时间离当前时间最接近的时间事件
+  七ime_event = aeSearchNearestTimer( )
+  # 计算最接近的时间事件距离到达还有多少毫秒
+  remaind_ms = time_event.when - unix_ts_now ( )
+  # 如果事件巳到达，那么remaind_ms 的值可能是负数，将它设定为0
+  if rernaind_rns < 0 :
+  	rernaind_ms = 0
+  # 根据remaind_ms 的值  创建timeval 结构
+  timeval = create_timeval_with_ms(remaind_ms)
+  # 阻塞并等待文件事件产生,最大阻塞时间由传入的 timeval 结构决定
+  # 如果remaind_ms的值为0，那么aeApiPoll调用之后马上返回，不阻塞
+  aeApiPoll（timeval)
+  # 处理所有巳产生的文件事件
+  processFileEvents ()
+  # 处理所有已到 的时 事件
+  processTimeEvents ()
+  ```
 
 
 
