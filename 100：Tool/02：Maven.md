@@ -2,27 +2,29 @@
 
 ------
 
+[TOC]
 
-​	一个项目管理工具，利用一个中央信息片断，能管理一个项目的构建，报告，文档，依赖等步骤，Apache下的一个纯 Java 开发的开源项目。
+##### 01：概述
 
-##### 01：特点：
-
-1. 基于模型的构建
-   - Maven能够将任意数量的项目构建到预定义的输出类型中，JAR 或WAR	
-2. 项目信息的一致性站点 
-   - 使用与构建过程相同的元数据，Maven 能够生成一个网站或PDF,包括您要添加的任何文档，并添加到关于项目开发状态的标准报告中
-3. 发布管理和发布单独的输出
-   - Maven 将不需要额外的配置，就可以与源代码管理系统（Git）集成，并可以基于某个标签管理项目的发布
+- 一个项目管理工具，利用一个中央信息片断，能管理一个项目的构建，报告，文档，依赖等步骤，Apache下的一个纯 Java 开发的开源项目。
+  - 基于模型的构建
+    - Maven能够将任意数量的项目构建到预定义的输出类型中，JAR 或WAR	
+  - 项目信息的一致性站点 
+    - 使用与构建过程相同的元数据，Maven 能够生成一个网站或PDF,包括您要添加的任何文档，并添加到关于项目开发状态的标准报告中
+  - 发布管理和发布单独的输出
+    - Maven 将不需要额外的配置，就可以与源代码管理系统（Git）集成，并可以基于某个标签管理项目的发布
 
 ##### 02：环境配置
 
-1. MAVEN_HOME：Maven的路径
-2. %MAVEN_HOME%\bin-------添加到path
-3. DOS下测试： mvn -v 
+- maven 添加到PATH；
+
+- ```shell
+  export MAVEN_HOME=/Users/likang/Code/Java/Maven/apache-maven-3.0.5/bin
+  ```
 
 ##### 03：Maven 项目结构
 
-![Maven项目结构](/Users/likang/Code/Git/Middleware/Tool/photos/Maven项目结构.png)
+- <img src="https://github.com/likang315/Middleware/blob/master/100%EF%BC%9ATool/photos/Maven%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png?raw=true)" style="zoom:50%;" />
 
 ##### 04：POM(Project Object Model)项目对象模型
 
@@ -52,15 +54,14 @@
 
   - **scope**
 
-    ![Maven-Scope](/Users/likang/Code/Git/Middleware/Tool/photos/Maven-Scope.png)
+    ![Maven-Scope](https://github.com/likang315/Middleware/blob/master/100%EF%BC%9ATool/photos/Maven-Scope.png?raw=true)
 
 ##### 05：Maven 三个标准的生命周期
 
 - clean：项目清理的处理，命令：mvn post-clean
 - default(或 build)：项目部署的处理，命令：mvn compile
 - site：项目站点文档创建的处理，命令：mvn site
-
-每个生命周期中都包含着一系列的阶段(phase),这些 phase 就相当于 Maven 提供的统一的接口，然后每一阶段(phase)的实现由Maven的插件来完成
+- 每个生命周期中都包含着一系列的阶段(phase)，这些 phase 就相当于 Maven 提供的统一的接口，然后**每一阶段(phase)的实现由Maven的插件来完成**；
 
 ##### 06：Maven 仓库：是项目中依赖的第三方库，帮助管理构件
 
@@ -102,26 +103,27 @@ Maven 依赖搜索顺序: local->central->remote,若都没有,Maven将停止处�
 
 ##### 07：Maven 项目模板
 
-​	使用原型 archetype 插件创建Java项目，archetype其实就是项目模板，它的任务是根据模板创建一个项目目录结构，maven-archetype-quickstart 插件
+- 使用原型 archetype 插件创建Java项目，archetype其实就是项目模板，它的任务是根据模板创建一个项目目录结构，maven-archetype-quickstart 插件
+
 
 ##### 08：Maven 引入外部依赖(jar包)
 
-- 在pom.xml的<dependencies>依赖标签中配置
+- 在 pom.xml 的`<dependencies>`依赖标签中配置
 
   ```xml
   <dependency>
-  <groupId>ldapjdk</groupId>          <!--库名称，也可以自定义 -->
-  <artifactId>ldapjdk</artifactId>    <!--库名称，也可以自定义-->
-  <version>1.0</version> 		    <!--版本号-->
-  <scope>system</scope> 		    <!--作用域-->
-  <!--项目根目录下的lib文件夹下-->
-  <systemPath>${basedir}\src\lib\ldapjdk.jar</systemPath> 
+      <groupId>ldapjdk</groupId>          <!--库名称，也可以自定义 -->
+      <artifactId>ldapjdk</artifactId>    <!--库名称，也可以自定义-->
+      <version>1.0</version> 		    <!--版本号-->
+      <scope>system</scope> 		    <!--作用域-->
+      <!--项目根目录下的lib文件夹下-->
+      <systemPath>${basedir}\src\lib\ldapjdk.jar</systemPath> 
   </dependency> 
   ```
 
 ##### 09：Maven 依赖管理 
 
-​	管理多模块的项目，模块间的依赖关系就变得非常复杂，管理也变得很困难，针对此种情形，Maven 提供了一种高度控制的方法，通过读取项目文件（pom.xml)，找出它们项目之间的依赖关系，只需要做的是在每个项目的 pom 中定义好直接的依赖关系
+​	管理多模块的项目，模块间的依赖关系就变得非常复杂，管理也变得很困难，针对此种情形，Maven 提供了一种高度控制的方法，通过读取项目文件（pom.xml)，找出它们项目之间的依赖关系，只需要做的是在每个项目的 pom 中定义好直接的依赖关系。
 
 ###### Maven 提供一些功能来控制可传递的依赖的程度	
 
@@ -135,16 +137,18 @@ Maven 依赖搜索顺序: local->central->remote,若都没有,Maven将停止处�
 
 ##### 10：Maven 在通过控制台构键Web应用
 
-	1>:执行 mvn 命令：
-		C:\MVN>mvn archetype:generate -DgroupId=com.companyname.automobile -DartifactId=trucks 
-		-DarchetypeArtifactId=maven-archetype-webapp  -DinteractiveMode=false
-	2>:执行mvn 命令
-		C:\MVN\trucks>mvn clean package
-	3>:打开 C:\< MVN < trucks < target < 文件夹，找到 trucks.war 文件，并复制到你的 web 服务器的web应用目录	
+```shell
+mvn archetype:generate -DgroupId=com.companyname.automobile -DartifactId=trucks 
+-DarchetypeArtifactId=maven-archetype-webapp  -DinteractiveMode=false
 
-##### 11：Maven的命令
+mvn clean package
 
-	clean：清除目标目录中的生成结果(target目录)
+3>:打开 C:\< MVN < trucks < target < 文件夹，找到 trucks.war 文件，并复制到你的 web 服务器的web应用目录	
+```
+
+##### 11：Maven 的命令
+
+- clean：清除目标目录中的生成结果(target目录)
 - compile：编译生成class文件，下载依赖包
 - test：运行项目中的单元测试
 - package：项目打包，但没有把打好的可执行jar包（war包或其它形式的包）布署到本地maven仓库和远程maven私服仓库
@@ -152,9 +156,7 @@ Maven 依赖搜索顺序: local->central->remote,若都没有,Maven将停止处�
 - deploy：完成了项目编译、单元测试、打包功能，同时把打好的可执行jar包（war包或其它形式的包）布署到本地maven仓库和远程maven私服仓库
 - generate-sources：开发环境与代码分离，很少使用，执行这个命令可以通过查看.classpath和.project两个文件来查看变化
 
-##### 12：Maven 多环境打包
-
-##### 使用Maven在编译时指定Profile方式【推荐】
+##### 12：Maven 多环境配置【使用Maven在编译时指定Profile方式】
 
 1. < profile>：定义了各个环境的变量ID；
    1. maven启动时会配置自动选择使用哪个< profile>
@@ -217,3 +219,30 @@ Maven 依赖搜索顺序: local->central->remote,若都没有,Maven将停止处�
         </resources>
 </build>
 ```
+
+##### 13：SpringBoot 打包方式
+
+- Jar包
+
+  - SpringBoot 默认的打包方式，不需要配置，当然也可以在pom.xml 中配置一行，打包完成后，**会在target 目录下生成一个jar包；**
+
+  - SpringBoot 打成的 Jar 包**包含了自己依赖的Jar包，并且内置了Tomcat容器，也把Tomcat 容器打进了Jar包**，和普通的Jar有一定的区别；
+
+    - ```xml
+      <packaging>jar</packaging>
+      ```
+
+  - 打包命令：mvn clean package
+
+  - 运行方式：java -jar XXX.jar
+
+- War包
+
+  - 修改配置成war，并且会排除内置的容器，会在target 目录下生成一个war包；
+
+    - ```xml
+      <packaging>war</packaging>
+      ```
+
+  - 运行方式：放在Tomcat下的webapps 目录下，启动Tomcat即可；
+
