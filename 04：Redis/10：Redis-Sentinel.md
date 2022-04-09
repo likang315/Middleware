@@ -6,9 +6,9 @@
 
 ##### 01：概述
 
-- Sentinel（哨岗、哨兵）是Redis的高可用性（high availability）解决方案：由一个或多个Sentinel实例（instance）组成的Sentinel系统（system）可以监视任意多个主服务器，以及这些主服务器属下的所有从服务器，并在被监视的主服务器进入下线状态时，自动将下线主服务器属下的某个从服务器升级为新的主服务器，然后由新的主服务器代替已下线的主服务器继续处理命令请求。
+- Sentinel（哨岗、哨兵）是**Redis的高可用性（high availability）解决方案**：由一个或多个Sentinel实例（instance）组成的Sentinel系统（system）可以监视任意多个主服务器，以及这些主服务器属下的所有从服务器，并在被监视的主服务器进入下线状态时，自动将下线主服务器属下的某个从服务器升级为新的主服务器，然后由新的主服务器代替已下线的主服务器继续处理命令请求。
 
-###### 故障转移操作
+###### 故障转移操作【主从复制、主从切换】
 
 - 当主服务器的下线时长超过用户设定的下线时长上限时，Sentinel系统就会对主执行故障转移操作：
   1. Sentinel系统会**挑选主服务器属下的其中一个从服务器**，并将这个被选中的从服务器升级为新的主服务器
@@ -129,10 +129,89 @@
 
 ##### 07：检测主观下线状态
 
-- 
+- 在默认情况下，Sentinel会以**每秒一次的频率**向所有与它创建了命令连接的实例（包括主服务器、从服务器、其他Sentinel在内）**发送PING命令**，并通过实例返回的PING命令回复来判断实例是否在线。
 
+###### 实例对PING命令的回复情况
 
+- 有效回复：实例返回+PONG、-LOADING、-MASTERDOWN三种回复的其中一种。
+- 无效回复：实例返回除以上三种回复之外的其他回复，或者在指定时限内没有返回任何回复。
 
+###### down-after-milliseconds 属性
+
+- Sentinel配置文件中的down-after-milliseconds选项指定了**Sentinel判断实例进入主观下线所需的时间长度**：如果一个实例在down-after-milliseconds毫秒内，连续向Sentinel返回无效回复，那么**Sentinel会修改这个实例所对应的实例结构，在结构的flags属性中打开SRI_S_DOWN标识**，以此来表示这个实例**已经进入主观下线状态**。
+
+###### 多个Sentinel设置的主观下线时长可能不同
+
+- 对于**监视同一个主服务器的多个Sentinel**来说，这些Sentinel所设置的down-after-milliseconds选项的值也可能不同，因此，当一个Sentinel将主服务器判断为主观下线时，其他Sentinel可能仍然会认为主服务器处于在线状态。
+
+##### 08：检查客观下线状态
+
+- 当Sentinel将一个主服务器判断为主观下线之后，为了确认这个主服务器是否真的下线了，它会**向同样监视这一主服务器的其他Sentinel进行询问（发送命令请求）**，看它们是否也认为主服务器已经进入了下线状态（可以是主观下线或者客观下线）。当Sentinel从其他Sentinel那里**接收到足够数量的已下线判断之后，Sentinel就会将从服务器判定为客观下线**，并对主服务器**执行故障转移**操作。
+
+###### SENTINEL is-master-down-by-addr 命令通信过程
+
+- ```shell
+  # curent_epoch:当前纪元
+  SENTINEL is-master-down-by-adr <ip> <port> <current_epoch> <runid>
+  ```
+
+- 用于询问其他Sentinel 是否统一主服务器已下线；
+
+- 当收到命令请求时，目标Sentinel会**分析并取出命令请求中包含的各个参数**，并根据其中的主服务器IP和端口号，检查主服务器是否已下线，然后向源Sentinel返回一条**包含三个参数的Multi Bulk回复**；
+
+  - **down_state**：返回目标Sentinel对Master的检查结果，**1代表主服务器已下线，0代表主服务器未下线；**
+  - leader_runid：Sentinel运行ID，用于选举首领Sentinel，“.”用于检测主服务器的下线状态；
+  - leader_epoch：目标Sentinel的局部首领Sentinel的配置纪元，用于选举首领Sentinel
+
+- Sentinel将**统计其他Sentinel同意主服务器已下线的数量，当这一数量达到配置指定的判断客观下线所需的数量时**，Sentinel会将**主服务器实例结构flags属性的 SRI_O_DOWN 标识打开，**表示主服务器已经进入客观下线状态。
+
+##### 09：选举首领Sentinel
+
+- 当一个主服务器被判断为客观下线时，监视这个下线主服务器的**各个Sentinel会进行协商，选举出一个首领Sentinel**，并由**首领Sentinel对下线主服务器执行故障转移**操作。
+
+###### 首领选举流程（Raft算法）
+
+- 监视同一个主服务器的**多个在线Sentinel中**的任意一个都有可能成为领头Sentinel，**每次进行领头Sentinel选举之后，不论选举是否成功，所有Sentinel的配置纪元（configuration epoch）的值都会自增一次**。配置纪元实际上就是一个计数器，并没有什么特别的。
+- 在一个配置纪元里面，**所有Sentinel都有 一次 将某个Sentinel设置为局部领头Sentinel的机会**，并且局部领头一旦设置，在这个配置纪元里面就不能再更改。
+- 每个**发现主服务器进入客观下线的Sentinel都会要求其他Sentinel将自己设置为局部领头Sentinel**。
+- 当一个Sentinel（源Sentinel）向另一个Sentinel（目标Sentinel）**发送SENTINEL is-master-down-by-addr命令，并且命令中的runid参数不是*符号而是源Sentinel的运行ID时**，这表示源Sentinel要求目标Sentinel将前者设置为后者的局部领头Sentinel。
+  - Sentinel设置局部领头Sentinel的规则是先到先得：最先向目标Sentinel发送设置要求的源Sentinel将成为目标Sentinel的局部领头Sentinel，而**之后接收到的所有设置要求都会被目标Sentinel拒绝**。
+  - 目标Sentinel在接收到SENTINEL is-master-down-by-addr命令之后，将向源Sentinel返回一条命令回复，**回复中的leader_runid参数和leader_epoch参数分别记录了目标Sentinel的局部领头Sentinel的运行ID和配置纪元**。
+- 源Sentinel在接收到目标Sentinel返回的命令回复之后，会**检查回复中leader_epoch参数的值和自己的配置纪元是否相同**，如果相同的话，那么源Sentinel继续取出回复中的leader_runid参数，**如果leader_runid参数的值和源Sentinel的运行ID一致**，那么表示目标Sentinel将源Sentinel设置成了局部领头Sentinel。
+- 如果有**某个Sentinel被半数以上的Sentinel设置成了局部领头Sentinel，那么这个Sentinel成为领头Sentinel**。
+  - 因为领头Sentinel的产生需要半数以上Sentinel的支持，并且**每个Sentinel在每个配置纪元里面只能设置一次局部领头Sentinel**，所以在一个配置纪元里面，只会出现一个领头Sentinel。
+- 如果在给定时限内，没有一个Sentinel被选举为领头Sentinel，那么各个Sentinel将在一段时间之后再次进行选举，直到选出领头Sentinel为止。
+
+##### 10：故障转移
+
+###### 选出新的主服务器
+
+- 在已下线主服务器属下的所有从服务器中，挑选出一个状态良好、数据完整的从服务器，然后向这个从服务器发送SLAVEOF no one命令，将这个从服务器转换为主服务器。
+
+###### 挑选流程（候选人列表
+
+- 领头Sentinel会将已下线主服务器的所有从服务器保存到一个列表里面，然后按照以下规则，一项一项地对列表进行过滤；
+  1. 删除列表中所有处于下线或者断线状态的从服务器，这可以保证列表中剩余的从服务器都是**正常在线**的。
+  2. 删除列表中所有最近五秒内没有回复过领头Sentinel的INFO命令的从服务器，这可以保证列表中剩余的从服务器都是**最近成功进行过通信**的。
+  3. 删除所有与已下线主服务器连接断开超过down-after-milliseconds*10毫秒的从服务器，**最新的数据**；
+  4. 领头Sentinel将**根据从服务器的优先级**，对列表中剩余的从服务器进行排序，并选出其中**优先级最高的从服务器**，若优先级相同，挑选复制偏移量最大的，若以上两个都相同，那挑选run-id最小的；
+- 在发送SLAVEOF no one命令之后，领头Sentinel会以每**秒一次的频率（平时是每十秒一次），向被升级的从服务器发送INFO命令**，并观察命令回复中的角色（role）信息，当被升级服务器的role从原来的slave变为master时，领头Sentinel就知道被选中的从服务器已经顺利升级为主服务器；
+
+###### 修改从服务器的复制目标
+
+- 当新的主服务器出现之后，领头Sentinel下一步要做的就是，让已下线主服务器属下的所有从服务器去复制新的主服务器，这一动作可以通过向**从服务器发送SLAVEOF命令**来实现。
+
+- ```shell
+  SLAVEOF <master_ip> <master_port>
+  ```
+
+###### 将旧的主服务器变为从服务器
+
+- 将已下线的主服务器设置为新的主服务器的从服务器，因为旧的主服务器已经下线，所以这种设置**是保存在server1对应的实例结构里面的**，当server1重新上线时，**Sentinel就会向它发送SLAVEOF命令，让它成为server2的从服务器**。
+
+###### 广播让跟随者 Sentinel 知道master 
+
+- 通过向 topic: `__sentienl__:hello` 发送消息，告知跟随者当前主服务器配置信息；
 
 
 
