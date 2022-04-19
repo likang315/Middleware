@@ -66,6 +66,15 @@
         unsigned char slots[16384/8];
         // 该节点负责槽的数量
         int numslots;
+        // 如果这是一个从节点，那么指向复制的主节点
+        struct clusterNode *slaveof;
+        // 从节点的数量
+        int numslvaes;
+        // 一个数组，记录没一个从节点的信息
+        struct clusterNode **slaves;
+        
+        // 一个链表，记录了所有其他节点对该节点的下线报告
+        list *fail_reports;
     };
     ```
 
@@ -114,6 +123,8 @@
       clusterNode *slots[16384];
       // 用跳跃表保存槽和键之间的关系
       zskipList *slot_to_keys;
+      // 记录当前节点正在从其他节点导入的槽
+      clusterNode *importing_slots_from[16384];
   } clusterState;
   ```
 
@@ -253,11 +264,63 @@
 - **重复执行步骤3和步骤4**，直到源节点保存的所有属于槽slot的键值对都被迁移至目标节点为止。
 - redis-trib**向集群中的任意一个节点发送CLUSTER SETSLOT＜slot＞NODE＜target_id＞命令**，将槽slot指派给目标节点，这一**指派信息会通过消息发送至整个集群**，最终集群中的所有节点都会知道槽slot已经指派给了目标节点。
 
-##### 11：ASK 错误
+###### CLUSTER SETSLOT IMPORTING 命令的实现
+
+- clusterState结构的 **importing_slots_from 数组**记录了当前节点正在从其他节点导入的槽；
+- 如果importing_slots_from[i]的值不为NULL，而是**指向一个clusterNode结构**，那么表示**当前节点正在从clusterNode所代表的节点导入槽i**。
+
+###### CLUSTER SETSLOT MIGRATING 命令的实现
+
+- clusterState结构的 **migrating_slots_to 数组**记录了当前节点正在迁移至其他节点的槽；
+- 如果migrating_slots_to[i]的值不为NULL，而是指向一个clusterNode结构，那么表示**当前节点正在将槽i迁移至clusterNode所代表的节点**。
+
+###### ASK 错误
+
+- 当客户端向源节点发送一个与数据库键有关的命令，并且命令要处理的数据库键恰好就属于正在被迁移的槽时（重新分片）
+  - 源节点会先在自己的数据库里面查找指定的键，如果找到的话，就直接执行客户端发送的命令；
+  - 如果节点没有在自己的数据库里找到键key，那么**节点会检查自己的clusterState.migrating_slots_to[i]，看键key所属的槽i是否正在进行迁移**，如果槽i的确在进行迁移的话，那么节点会**向客户端发送一个ASK错误，重定向客户端到正在导入槽i的节点去查找键key**。
+
+###### ASKING 命令
+
+- 唯一要做的就是服务器打开发送该命令的客户端的REDIS_ASKING标识；
+- 在一般情况下，如果客户端向节点发送一个关于槽i的命令，而**槽i又没有指派给这个节点的话**，那么节点将向客户端返回一个MOVED错误；但是，如果**节点的clusterState.importing_slots_from[i]显示节点正在导入槽i，并且发送命令的客户端带有REDIS_ASKING标识**，那么节点将破例执行这个关于槽i的命令一次；
+- 当客户端接收到ASK错误并转向至正在导入槽的节点时，**客户端会先向节点发送一个ASKING命令，然后才重新发送想要执行的命令**，这是因为如果客户端不发送ASKING命令，而直接发送想要执行的命令的话，那么客户端发送的命令将被节点拒绝执行，并返回MOVED错误。
+
+##### 11：复制故障和转移（sentinel 相似）
+
+- Redis集群中的节点**分为主节点（master）和从节点（slave）**，其中主节点用于处理槽，而从节点则用于复制某个主节点，并在被复制的主节点下线时，代替下线主节点继续处理命令请求。
+
+###### 设置从节点
+
+- 向一个节点发送命令，可以让接收命令的节点成为node_id所指定节点的从节点，并开始对主节点进行复制；
+
+  - ```
+    CLUSTER REPLICATE <node_id>
+    ```
+
+  - 接收到该命令的节点首先会在自己的**clusterState.nodes字典**中找到node_id所对应节点的clusterNode结构，并**将自己的clusterState.myself.slaveof指针指向这个结构**，以此来记录这个节点正在复制的主节点；
+
+  - 然后节点会修改自己在**clusterState.myself.flags中的属性**，关**闭原本的REDIS_NODE_MASTER标识，打开REDIS_NODE_SLAVE标识**，表示这个节点已经由原来的主节点变成了从节点。
+
+  - 集群中的所有节点都会在代表主节点的clusterNode结构的slaves属性和numslaves属性中记录正在复制这个主节点的从节点名单；
+
+###### 故障检测
+
+- 集群中的每个节点都会**定期地向集群中的其他节点发送PING消息**，以此来检测对方是否在线，如果接收PING消息的节点**没有在规定的时间内，向发送PING消息的节点返回PONG消息**，那么发送PING消息的节点就会将接收PING消息的节点标记为**疑似下线（probable fail，PFAIL）**。
+- 当一个**主节点A通过消息得知主节点B认为主节点C进入了疑似下线状态时**，主节点A会在自己的clusterState.nodes字典中找到主节点C所对应的clusterNode结构，并**将主节点B的下线报告（failure report）添加到C  的 clusterNode结构的fail_reports链表里面**；
+- 如果在一个集群里面，**半数以上负责处理槽的主节点都将某个主节点x报告为疑似下线**，那么这个主节点x将被标记为已下线（FAIL），将主节点x标记为已下线的节点会**向集群广播一条关于主节点x的FAIL消息，所有收到这条FAIL消息的节点都会立即将主节点x标记为已下线**。
+
+###### 故障转移
+
+- 与Sentinel 一致；
+
+###### 选举新的主节点
+
+- 与Sentinel 首领选举一致；
+
+##### 12：消息
 
 - 
-
-
 
 
 
