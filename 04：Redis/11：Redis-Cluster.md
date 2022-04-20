@@ -320,13 +320,96 @@
 
 ##### 12：消息
 
-- 
+- 集群中的各个节点通过发送和接收消息（message）来进行通信；【五种消息格式】
+  - MEET消息：请求加入集群；
+  - PING消息：
+    - 集群里的每个节点默认每隔一秒钟就会从已知节点列表中随机选出五个节点，然后对这五个节点中最长时间没有发送过PING消息的节点发送PING消息（贪婪），以此来检测被选中的节点是否在线；	
+    - 如果节点A最后一次收到节点B发送的PONG消息的时间，距离当前时间已经超过了节点A的**cluster-node-timeout**选项设置时长的一半； 
+  - PONG 消息：
+    - 为了向发送者确认这条MEET消息或者PING消息已到达，接收者会向发送者返回一条PONG消息；
+    - 故障转移时：一个节点也可以通过向集群广播自己的PONG消息来让集群中的其他节点立即刷新关于这个节点的认识；
+  - FAIL消息：当一个主节点A判断另一个主节点B已经进入FAIL状态时，节点A会向集群广播一条关于节点B的FAIL消息，所有收到这条消息的节点都会立即将节点B标记为**已下线**。
+  - PUBLISH消息：当节点接收到一个PUBLISH命令时，节点会执行这个命令，并向集群广播一条PUBLISH消息，所有接收到这条PUBLISH消息的节点都会执行相同的PUBLISH命令。
 
+###### 消息头
 
+- 每个消息头都由一个cluster.h/clusterMsg结构表示：
 
+- clusterMsg.data 属性指向联合cluster.h/clusterMsgData，这个联合就是消息的正文：
 
+- ```c
+  typedef struct {
+      char sig[4];        /* Siganture "RCmb" (Redis Cluster message bus). */
+      uint32_t totlen;    /* 消息总长度 */
+      uint16_t ver;       /* 协议版本，当前设置为1。 */
+      uint16_t port;      /* TCP端口号. */
+      uint16_t type;      /* 消息类型 */
+      uint16_t count;     /* data中的gossip session个数。（只在发送MEET、PING和PONG这三种消息时使用） */
+      uint64_t currentEpoch;  /* 发送者所处的配置纪元 */
+      uint64_t configEpoch;   /* 如果消息发送者是一个主节点，那么该项为消息发送者配置纪元。
+                                如果消息发送者是一个从节点，那么该项为发送者正在复制的主节点纪元。 */
+      uint64_t offset;                        /* 复制偏移量. */
+      char sender[CLUSTER_NAMELEN];           /* 发送节点名称 */
+      unsigned char myslots[CLUSTER_SLOTS/8]; /*消息发送者目前的槽指派信息*/
+      char slaveof[CLUSTER_NAMELEN];          /*发送方如果是从，对应主的名称。*/
+      char myip[NET_IP_STR_LEN];              /* 发送人IP地址，如果不是全部为0. */
+      char notused1[34];                      /* 34 字节保留字节 */
+      uint16_t cport;                         /* 发送方集群TCP 端口 */
+      uint16_t flags;                         /* 发送人节点标志 */
+      unsigned char state;                    /* 消息发送者所在集群的状态 */
+      unsigned char mflags[3];                /* 消息标志: CLUSTERMSG_FLAG[012]_... */
+      union clusterMsgData data;              /* 消息包内容 */
+  } clusterMsg;
+  ```
 
+###### MEET、PING、PONG消息的实现
 
+- Redis集群中的各个节点通过Gossip协议来交换各自关于不同节点的状态信息，其中Gossip协议由MEET、PING、PONG三种消息实现，这**三种消息的正文都由两个cluster.h/clusterMsgDataGossip结构组成**；
+
+- ```c
+  union clusterMsgData {
+  	struct {
+  		// 每条meet ping pong 消息都包含两个该结构
+  		clusterMsgDataGossip gossip[1];
+  	} ping;
+  }
+  ```
+
+- 每次发送MEET、PING、PONG消息时，发送者都**从自己的已知节点列表中随机选出两个节点**（可以是主节点或者从节点），并将这两个被选中节点的信息**分别保存到两个clusterMsgDataGossip结构里面**。clusterMsgDataGossip结构记录了被选中节点的名字，发送者与被选中节点最后一次发送和接收PING消息和PONG消息的时间戳，被选中节点的IP地址和端口号，以及被选中节点的标识值：
+
+- 当接收者收到MEET、PING、PONG消息时，接收者会访问消息正文中的两个clusterMsgDataGossip结构，并根据自己是否认识clusterMsgDataGossip结构中记录的被选中节点来选择握手（不存在）还是更新操作（存在）；
+
+- 同样返回PONG消息，也会写到任意两个已知节点；
+
+###### FAIL 消息的实现
+
+- Gossip 协议也可以实现，只是传播较慢，下线需要立即让集群其他节点知道；
+
+- FAIL消息的正文由cluster.h/clusterMsgDataFail结构表示，这个结构只包含一个nodename属性，该属性记录了**已下线节点的名字**：
+
+  - ```c
+    typedef struct {
+    	char nodename[REDIS_CLUSTE_NAMELEN];
+    } clusterMsgaDataFail;
+    ```
+
+###### PUBLISH 消息的实现
+
+- 当客户端向集群中的某个节点发送命令，接收到PUBLISH命令的节点**不仅会向channel频道发送消息message，它还会向集群广播一条PUBLISH消息，所有接收到这条PUBLISH消息的节点都会向channel频道发送message消息**。
+
+  - ```
+    PUBLISH <channle> <message>
+    ```
+
+- PUBLISH消息的正文由cluster.h/clusterMsgDataPublish结构表示：
+
+  - ```c
+    typedef struct {
+        uint32_t channel_len;        // 渠道名称长度
+        uint32_t message_len;        // 消息长度
+        unsigned char bulk_data[8];  // 渠道和消息内容
+    } clusterMsgDataPublish;
+    ```
 
 
 
