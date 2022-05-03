@@ -32,30 +32,6 @@
      2) (error) WRONGTYPE Operation against a key holding the wrong kind of value
      ```
 
-##### 04：内存淘汰
-
-- 当 Redis **内存超出物理内存的时候**，内存的数据会开始和磁盘缠身频繁的交换, 会让 Redis 的性能急剧下降；
-- 在⽣产环境中需要指定 **maxmemory 来限制内存超出期望⼤⼩**
-
-###### 最大内存淘汰策略（maxmemory-policy）
-
-1. noeviction：**不支持写请求，只支持读请求**，但线上的业务不会持续进⾏；
-   - 默认的淘汰策略
-2. volatile-lru：**设置了过期时间中最少使⽤的 key 优先被淘汰**，没有设置过期时间的 key 不会被淘汰；
-   - 线上设置；
-3. volatile-ttl：是 **key 的剩余寿命的 ttl 值**，值越⼩越优先被淘汰；
-4. volatile-random：**随机淘汰设置过期时间的 key**；
-5. allkeys-lru：对全体 key 使⽤ LRU 淘汰；
-6. allkeys-random: 对全部的 key 进⾏随机淘汰；
-
-###### 注意事项
-
-volatile-xxx ：策略只会针对带过期的时间的 key 进⾏淘汰
-
-- allkeys-xxx ：策略会对所有的 key 进⾏淘汰
-- 如果**只是做缓存**，那应该使⽤ allkeys-xxx，写缓存时不必携带过期时间
-- 如果**还想同时使⽤ Redis 的持久化功能**，那就使⽤ volatile-xxx 策略，这样可以保留没有设置过期时间的 key，它们是永久的 key 不会被 LRU 算法淘汰；
-
 ##### 07：管道技术
 
 - Redis 是一种基于客户端-服务端模型以及请求/响应协议的TCP服务
