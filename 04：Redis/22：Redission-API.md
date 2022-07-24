@@ -273,8 +273,4 @@ bloomFilter.contains(new SomeObject("field1Value", "field8Value"));
   Double score = set.getScore(new SomeObject(g, d)); 
   ```
 
-
-
-
-
-#### 
+ 
