@@ -2,6 +2,8 @@
 
 ------
 
+[TOC]
+
 ##### Git：分布式版本控制系统，控制代码版本，可回退，提交，合并
 
 - 工作区（workspace）：修改的区域
@@ -40,7 +42,7 @@
 
   - 需要生成两对公钥私钥，然后公钥配对应的远程仓库，私钥本地都添加上
 
-    - ssh-keygen -t rsa -C "likang315@163com"
+    - ssh-keygen -t rsa -C "likang315@163com"    
       - 在本地生成公钥私钥,然后把公钥添加到Github 或者Gitlab，邮箱不同；
     - ssh-add ~/.ssh/github_rsa
       - 将生成的密钥添加大ssh_agent的告诉缓存中；

@@ -177,46 +177,46 @@ mvn clean package
 ```xml
 <profiles>
     <profile>
-      <id>dev</id>
-      <properties>
-        <project.environment>dev</project.environment>
-      </properties>
-      <activation>
-        <!--默认激活dev环境-->
-        <activeByDefault>true</activeByDefault>
-      </activation>
+        <id>dev</id>
+        <properties>
+            <project.environment>dev</project.environment>
+        </properties>
+        <activation>
+            <!--默认激活dev环境-->
+            <activeByDefault>true</activeByDefault>
+        </activation>
     </profile>
     <profile>
-      <id>beta</id>
-      <properties>
-        <project.environment>beta</project.environment>
-      </properties>
+        <id>beta</id>
+        <properties>
+            <project.environment>beta</project.environment>
+        </properties>
     </profile>
     <profile>
-      <id>prod</id>
-      <properties>
-        <project.environment>prod</project.environment>
-      </properties>
+        <id>prod</id>
+        <properties>
+            <project.environment>prod</project.environment>
+        </properties>
     </profile>
 </profiles>
 
- <build>
-        <finalName>工程名</finalName>
-        <filters>
-            <filter>src/main/config/${project.environment}/filter.properties</filter>
-        </filters>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>config</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources/config/${profile.active}</directory>
-              <targetPath>.</targetPath>
-            </resource>
-        </resources>
+<build>
+    <finalName>工程名</finalName>
+    <filters>
+        <filter>src/main/config/${project.environment}/filter.properties</filter>
+    </filters>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+                <exclude>config</exclude>
+            </excludes>
+        </resource>
+        <resource>
+            <directory>src/main/resources/config/${profile.active}</directory>
+            <targetPath>.</targetPath>
+        </resource>
+    </resources>
 </build>
 ```
 
