@@ -121,7 +121,7 @@ public static void main(String[] args) {
 - ClassPathXmlApplicationContext: 从类加载路径下搜索xml配置文件，并根据配置文件来初始化Spring容器
   - 类路径：
     - **webapp/WEB-INF/classes**
-      - 存放src目录java文件编译之后的class文件，xml、properties等资源配置文件，是一个定位资源的入口，默认的classpath；8
+      - 存放src目录java文件编译之后的class文件，xml、properties等资源配置文件，是一个定位资源的入口，默认的classpath；
     - maven构建项目时候 **resource**目录，默认的classpath ；
 - FileSystemXmlApplicationContext: 从文件系统的相对路径或绝对路径下去搜索配置文件，并根据配置文件来初始化Spring容器
 

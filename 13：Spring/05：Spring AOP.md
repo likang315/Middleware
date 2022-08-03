@@ -11,10 +11,9 @@
 ##### 02：AOP 相关术语
 
 1. **连接点（Joinpoint）**
-
    - 一个类或一段程序执行的某个特定的位置，这个特定的位置就称为"连接点"
    - Spring  仅支持方法的连接点，即仅能在方法**调用前**、方法**调用后**、方法**抛出异常时**这些程序执行点织入增强；
-
+   
 2. **切点（Pointcut ）**
 - 每个程序类都拥有多个连接点，AOP通过 "切点" 定位特定的连接点，切点和连接点不是一对一的关系，**一个切点可以匹配多个连接点**
 3. **增强（Advice）**
@@ -25,8 +24,7 @@
 5. 目标对象（Target）
 
    - 增强逻辑的织入目标类
-6. 织入（Weaving ）
-
+6. **织入（Weaving ）**
    - 将增强添加到目标类具体连接点的过程，**Spring 采用动态代理织入，而AspectJ 采用编译期织入和类装载器织入**
    - 三种织入的方式：
      1. 编译期织入，这要求使用特殊的 Java 编译器
@@ -43,6 +41,8 @@
 ##### 04：启用 AspectJ 
 
 ```java
+// springboot 自动配置
+
 @Configuration
 @EnableAspectJAutoProxy
 public class AppConfig {
@@ -56,9 +56,15 @@ public class AppConfig {
 
 - 首先配置@Aspect
   - @Before：方法执行前
+  - @Around：环绕
   - @After  ：方法执行后
   - @AfterReturning：方法返回后
   - @AfterThrowing：方法抛出异常后
+- 当多个Aspect 作用到一个切点时，指定Aspect 的执行顺序
+  - 实现 org.springframework.core.Ordered 接口，重写 getOrder() 方法；
+  - 添加@Order注解，该注解全称为：org.springframework.core.annotation.Order
+    - 值越小，优先级越高；
+  
 
 ```java
 // 定义切面类
@@ -68,7 +74,7 @@ import org.aspectj.lang.annotation.Aspect;
 @EnableAspectJAutoProxy
 @Component
 public class Logging {
-   // 定义一个空方法作为切点，定义切点表达式
+   // 定义一个空方法作为切点，使用Pointcut定义切点时，可以使用&&、||、! 这三个运算
    @Pointcut("execution(* com.xupt.service.*(..))")
    private void selectAll(){}
   
@@ -94,7 +100,7 @@ public class Logging {
   
    @Around("selectAll()")
 	 public void AroundTask(ProceedingJoinPoint invocation){
- 			  System.out.println("已经记录下操作日志@Around 方法执行前");
+ 		System.out.println("已经记录下操作日志@Around 方法执行前");
         invocation.proceed();
         System.out.println("已经记录下操作日志@Around 方法执行后");
    }
@@ -110,7 +116,7 @@ public class Logging {
 <aop:config>
    <aop:aspect id="myAspect" ref="Aspect">
       <aop:pointcut id="businessService"
-         						expression="execution(* com.xyz.myapp.service.*.*(..))"/>
+         			expression="execution(* com.xyz.myapp.service.*.*(..))"/>
       <!-- a before advice definition -->
       <aop:before pointcut-ref="businessService" method="doRequiredTask"/>
       <!-- an after advice definition -->
@@ -130,28 +136,36 @@ public class Logging {
 
 ##### 07：定义切点【重要】
 
-- 通过切点来映射连接点，使用**表达式（ Execution ）来定义切点**，表达式中可以使用  &&   ||   !
-- execution()：用于匹配连接点的执行方法
-- 把想织入的方法，设置为统一的前缀，然后扫描整个类【重要】
+###### 定义切点的方式
 
-###### Execution 语法
+- execution：一般用于指定方法的执行，用的最多；
+- @args：当执行的**方法参数**类型上拥有**指定的注解时**生效。
+- @annotation：当执行的方法上拥有**指定的注解时**生效。
 
--  *：任意
--  ..：子包
+###### execution()：用于匹配切点的执行方法，定义方式
+
+- execution(modifiers-pattern? ret-type-pattern declaring-type-pattern? name-pattern(param-pattern)throws-pattern?) 
+  - 修饰符匹配（modifier-pattern?）
+  - 返回值匹配（ret-type-pattern）可以为*表示任何返回值,全路径的类名等
+  - 类路径匹配（declaring-type-pattern?）
+  - 方法名匹配（name-pattern）可以指定方法名 或者 *代表所有, set* 代表以set开头的所有方法
+  - 参数匹配（(param-pattern)）可以指定具体的参数类型，多个参数间用“,”隔开，各个参数也可以用" * " 来表示匹配任意类型的参数，可以用(…)表示零个或多个任意参数；
+  - 异常类型匹配（throws-pattern?）
+  - ? ：代表该选项是可选的；
+
 
 ```java
-execution(public * *(..)) // 任意 public 的方法，访问权限修饰符可有可无
+Around("execution(public * *(..))") // 任意 public 的方法，访问权限修饰符可有可无
 // 任意以 set 开始的方法
 execution(* set*(..))  
-execution(* com.xyz.service.AccountService.*(..)) //AccountService 接口下的任意方法
-execution(* com.xyz.service.*.*(..)) //service 包下的任意类任意方法
-execution(* com.xyz.service..*.*(..)) //service 任意子包下所有类和方法
+execution(* com.xyz.service.AccountService.*(..)) // AccountService 接口下的任意方法
+Before("execution(* com.xyz.service..*.*(..))") // service 任意子包下所有类和方法
 ```
 
 ##### 08：处理增强中的参数
 
 ```java
-@Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation(int) && args(account)")
+@Before("com.xupt.dataAccessOperation(int) && args(account)")
 public void validateAccount(int account) {
 	// 在运行此dataAccessOperation(int)时，先把他的参数传给account执行
 }
@@ -159,14 +173,15 @@ public void validateAccount(int account) {
 
 ##### 09：AOP API
 
-###### ProceedingJoinPoint
+###### ProceedingJoinPoint 【连接点对象】
 
-- 主要作用是AOP增强时，可以**动态的获取类的任何信息**，像反射一样；
+- 作用：任何一个增强方法都可以通过**将第一个入参声明为JoinPoint**，访问到连接点上下文的信息；
 
 - ProceedingJoinPoint 继承了JoinPoint接口
 
-  - public interface ProceedingJoinPoint extends JoinPoint 
-  - 定义了调用被代理方法的方法 **proceed**();
+  - 它新增了两个用于执行连接点方法的方法；
+  - proceed() throws java.lang.Throwable：通过反射执行目标对象的连接点处的方法； 
+  - proceed(java.lang.Object[] args) throws java.lang.Throwable：通过反射执行目标对象连接点处的方法，不过**使用新的入参替换原来的入参**。 
 
 - JoinPoint 接口的内部接口 **StaticPart**
 
@@ -202,6 +217,11 @@ public void validateAccount(int account) {
           String toLongString();
       }
   }
+  
+  public interface ProceedingJoinPoint extends JoinPoint {
+      public Object proceed() throws Throwable;
+      public Object proceed(Object[] args) throws Throwable;
+  }
   ```
 
 
@@ -226,7 +246,6 @@ public interface Signature {
 
 ###### 示例
 
-- 自定义记录耗时注解，一般配合Ordered接口使用，多个注解时，定义先后顺序;
 - 注意：AOP 基于代理模式，只能拦截代理对象调用的方法；
 
 ```java
