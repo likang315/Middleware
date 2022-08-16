@@ -140,7 +140,7 @@
 - ```java
   // 注解声明式使用 - 延迟一秒开始执行，每隔5秒执行一次
   @Scheduled(fixedRate = 5000, initialDelay = 1000)
-  public void processTask(){
+  public void processTask() {
   
   }
   
@@ -151,9 +151,42 @@
   }
   ```
 
+##### 06：Task 的调度
 
+- 如果没有配置`TaskScheduler`或者`ScheduledExecutorService`类型的`Bean`，那么调度模块**只会创建一个线程**去调度所有装载完毕的任务，如果任务比较多，很有可能会造成大量任务饥饿，表现为存在部分任务不会触发调度的场景（这个是调度模块生产中经常遇到的故障，需要重点排查是否没有设置`TaskScheduler`或者`ScheduledExecutorService`）。
 
+###### 并发执行
 
+```java
+@EnableScheduling
+@Configuration
+public class ScheduleConfig implements SchedulingConfigurer {
+
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        taskRegistrar.setScheduler(taskExecutor());
+    }
+
+    /**
+     * 使用JUC 提供的定时任务线程池，bean 销毁时自动关闭线程池
+     *
+     * @return
+     */
+    @Bean(destroyMethod = "shutdown")
+    public ScheduledExecutorService taskExecutor() {
+        String ip = NetworkUtil.queryIpAddress();
+        return new ScheduledThreadPoolExecutor(5, new BasicThreadFactory.Builder().daemon(true)
+                .namingPattern(ip + "--" + "scheduled" + "-%d").build());
+    }
+
+}
+```
+
+##### 07：源码分析（ScheduledAnnotationBeanPostProcessor）
+
+- BeanPostProcessor：`Bean`实例初始化前后分别回调，其中，后回调的`postProcessAfterInitialization()`方法就是用于**解析**`@Scheduled`和**装载**`ScheduledTask`。
+- DestructionAwareBeanPostProcessor：具体的`Bean`实例销毁的时候回调，用于`Bean`实例销毁的时候**移除和取消对应的任务**实例。
+- DisposableBean接口：当前`Bean`实例销毁时候回调，也就是`ScheduledAnnotationBeanPostProcessor`自身被销毁的时候回调，用于**取消和清理**所有的`ScheduledTask`。
 
 
 
