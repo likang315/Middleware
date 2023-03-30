@@ -67,7 +67,8 @@ Public class AppConfig{}
 - **@Autowired：**
 
   - 用于属性、方法上
-- 通过**byType**自动注入，从容器中取出此类的实例对象赋给它，应用于 bean 属性，setter 方法，构造方法；
+  - 通过**byType**自动注入，从容器中取出此类的实例对象赋给它，应用于 bean 属性，setter 方法，构造方法；
+  - 是Spring 自己的
   
   ```java
   // 通过byType注入
@@ -84,16 +85,20 @@ Public class AppConfig{}
     this.spellChecker = spellChecker;
   }
   ```
-
+  
 - **@Resource ：**
-  
+
   - 默认通过**byName**自动注入，如果使用type属性时则使用byType自动注入策略，如果既不指定name也不指定type属性，这是将通过**反射机制使用byName自动注入**；
-  
+
+  - 符合JSR-250规范的一种实现；
+
+  - @Autowired 是 Spring 提供的，一旦切换到别的 IoC 框架，就无法支持注入了. 而@Resource 是 JSR-250 提供的，它是 Java 标准，我们使用的 IoC 容器应该和它兼容，所以即使换了容器，它也能正常工作，所以建议使用@Resource；
+
     ```java
     @Resource(name="baseDao")
     protected ArticleDao articleDao;
     ```
-  
+
 - **@Qualifier：**
 
   - 通过选择装配 bean 的**标识符来装配**，用于多个 bean 无法确定装配哪个的情况（起别名），**通过byName**获取对象；
@@ -120,7 +125,7 @@ Public class AppConfig{}
   ```
 
 - **@Required :**
-  
+
   - 应用于 bean 属性的 setter 方法，它表明受影响的 bean 属性在配置时必须放在 XML 配置文件中，否则容器就会抛出一个 BeanInitializationException 异常；
 
 ##### 05：Bean 初始化之后，销毁之前
