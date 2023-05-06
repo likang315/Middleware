@@ -4,6 +4,28 @@
 
 [TOC]
 
+##### 00：Redis 安装&使用
+
+- redis-cli：连接 redis 客户端；
+  - redis-cli -h 127.0.0.1 -p 6379 -a password --no-auth-warning
+- redis-server：redis 服务；
+  - 启动 redis 服务，redis-server /usr/local/redis/etc/redis.conf
+    - 以该配置文件启动 redis；
+
+###### 配置文件
+
+- redis 以守护进程执行
+
+  - ```
+    daemonize yes
+    ```
+
+- redis 后台日志打印文件
+
+  - ```
+    logfile /usr/local/redis/redis-log
+    ```
+
 ##### 01：Java
 
 - 导入Jar 包： Jedis.jar  确保下载最新驱动包
