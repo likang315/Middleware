@@ -64,5 +64,9 @@ Build->debugger->show debug window breakpoint：设置请求进入到断点后�
   - All：所有线程并发执行，可能断点停不住；
   - Thread：串行执行，想让他在那停就在那停；
 
+##### 9：流调试
+
+- Trace Current Stream Chain；
+
 
 
