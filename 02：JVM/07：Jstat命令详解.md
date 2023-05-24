@@ -22,7 +22,7 @@
      - -gcnewcapacity 用于查看新生代存储容量的情况
      - -gcold 用于查看老生代及持久代垃圾收集的情况
      - -gcoldcapacity 用于查看老生代的容量
-     - -gcutil 显示垃圾收集信息
+     - **-gcutil 显示垃圾收集信息**
      - -gccause 显示垃圾回收的相关信息（通-gcutil）,同时显示最后一次仅当前正在发生的垃圾收集的原因
      - -printcompilation 输出JIT编译的方法信息
    - **-t：**可以在打印的列**加上Timestamp列**，用于显示系统运行的时间
@@ -34,9 +34,14 @@
 
 ##### 02：示例
 
+###### 查看内存及GC情况
+
+- jstat -gcutil pid 间隔时间 多少条记录
+  - 示例：jstat -gcutil 25 1000 1
+
 ###### 类加载统计
 
-- jstat -compiler 3346
+- jstat -class 3346
 - 统计JVM中加载的类的数量与size；
   - Loaded：加载类的数量
   - Bytes：加载类的size，单位为Byte

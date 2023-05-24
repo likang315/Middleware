@@ -32,7 +32,7 @@
   - **help：**打印帮助信息
   - **J<flag>：**指定传递给运行jmap的JVM的参数
 
-- **pid：** 需要打印配置信息的进程ID。
+- **pid：** 需要打印配置pa的进程ID。
 
 - **executable：** 产生核心dump的Java可执行文件。
 
@@ -50,14 +50,14 @@
 2. **jmap -heap pid**
    - 显示Java堆详细信息;
    - 打印一个堆的摘要信息，包括使用的GC算法、堆配置信息和各内存区域内存使用信息;
-3. jmap -histo:live pid
+3. **jmap -histo:live pid**
    - 显示堆中对象的统计信息
    - 包括每个Java类、对象数量、内存大小(单位：字节)、完全限定的类名。打印的虚拟机内部的类名称将会带有一个’*’前缀。如果指定了live子选项，则只计算活动的对象;
 4. jmap -clstats pid
-   - 打印类加载器信息
+   - 打印类加ja载器信息
 5. jmap -finalizerinfo pid
    - 打印等待销毁的对象信息；
-6. **jmap -F -dump:format=b,file=heapdump.hprof pid**
+6. **jmap -dump:format=b,file=heapdump.hprof pid**
    - 以**hprof二进制格式转储Java堆到指定filename的文件中**。live子选项是可选的。如果指定了live子选项，堆中只有活动的对象会被转储；
    - 该过程较为耗时，并且执行的过程中为了保证dump的信息是可靠的，所以会**暂停应用， 线上系统慎用**；
 
