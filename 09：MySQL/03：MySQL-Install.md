@@ -1,4 +1,4 @@
-### OPS
+### MySQL-Install
 
 ------
 
@@ -12,8 +12,9 @@
 4. sudo dpkg -i *.deb
    - 若有依赖，下载对应依赖包；
 5. 出现设置密码页面（两次）
-6. 查看是否安装成功：systemctl status mysql
-7. 登录mysql：mysql -y root -ppassword
+6. 查看是否安装成功：systemctl WGET
+7. mysql
+8. 登录mysql：mysql -y root -ppassword
 
 ##### 02：远程访问MySQL
 
@@ -77,21 +78,20 @@
 ###### 环境变量
 
 - etc/profile、/etc/paths：是系统级别的，系统启动就会加载
-- ～/.bash_profile：用户的环境变量，该文件包含专用于你的账户bash，shell的bash信息,当登录时以及每次打开新的shell时，该文件被读取
+- ～/.bash_profile：用户的环境变量，该文件包含专用于你的账户bash，shell的bash信息，当登录时以及每次打开新的shell时，该文件被读取。
 
 ###### 查看PATH
 
 -  echo  $PATH：查看环境变量
-- /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/likang/Code/Java/Maven/apache-maven-3.6.1/bin
+- /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/xxx/Code/Java/Maven/apache-maven-3.6.1/bin
   - ：为path分隔符
 
 ###### 修改PATH 
 
-1. sudo vi ～/.bash_profile :使用vi打开.bash_profile ,必须使用sudo ，否则没有权限保存
-2. export Maven_HOME=/Users/likang/Code/Java/Maven/apache-maven-3.6.1/bin
-3. 
+1. sudo vi ～/.bash_profile :使用vi打开.bash_profile，必须使用sudo ，否则没有权限保存
 
 1. ```shell
+   export MySQL_HOME=/usr/local/mysql/bin
    export PATH=$PATH:$Maven_HOME:$MySQL_HOME
    # 配置多个时用：分割
    # 在PATH变量后面加多一个目录Maven_HOME
@@ -99,7 +99,7 @@
 
 4：source ~/.bash_profile ：立即生效
 
-##### 0：修改密码
+##### 08：修改密码
 
 1. 关闭mysql服务
 2. cd /usr/local/mysql/bin/
@@ -109,9 +109,9 @@
 4. FLUSH PRIVILEGES;  
 5. SET PASSWORD FOR 'root'@'localhost' = PASSWORD('你的新密码');
 
-##### 0：MySQL登录、退出
+##### 09：MySQL登录、退出
 
-- 登录： mysql -uroot -pmysql(密码) 
+- 登录： mysql -u root -pmysql(密码) 
 - 退出：\q 
 - 查看状态： \s 
 - 修改分隔符：delimiter 分隔符
@@ -123,6 +123,6 @@
 - use 数据库名; 
 - 修改编码格式：alter database 数据库名 character set gbk; 
 - 删除数据库：drop database 数据库名; 
-- 导入数据库：mysql -u root -p 数据库名 < sql的URL  
+- 导入数据库：mysql -u root -p 数据库名 < sql 文件
 - 导出数据库：mysqldump -u root -p xupt > xupt.sql
 
