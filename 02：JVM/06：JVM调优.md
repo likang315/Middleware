@@ -6,40 +6,47 @@
 
 ##### 01：概述
 
-​	一般调整**垃圾回收器**，和**堆大小**以及**最大停顿时间**
+​	一般调整**垃圾回收器与最大停顿时间，堆大小和元数据区**；
 
-- -XX:+UseG1GC -Xmx9g -XX:MaxGCPauseMillis = 200
-  - -XX:+UseG1GC：为开启G1垃圾收集器
-  - -Xmx9g：设计堆内存的最大内存为9G
-  - -XX:MaxGCPauseMillis=200：设置GC的最大暂停时间为200ms
-- 如果我们需要调优，在内存大小一定的情况下，我们只需要修改最大暂停时间即可;
+- -XX:+UseG1GC：开启G1垃圾收集器；
+- -XX:MaxGCPauseMillis=200：设置GC的最大暂停时间为200ms；
+- -Xmx8g：堆内存的最大内存为 9G；
+- -XX:MaxMetaspaceSize=1024m：元数据区为 1000M；
 
-##### 02：Jvm 参数格式
+##### 02：JVM 参数格式
 
 1. 标准参数（-），**所有的JVM实现都必须实现**这些参数的功能，而且向后兼容；
-2. 非标准参数（-X），**默认jvm实现这些参数的功能**，但是并不保证所有jvm实现都满足，且不保证向后兼容；
-3. 非Stable参数（-XX），此类参数各个jvm实现会有所不同，将来可能会随时取消，需要慎重使用；
+2. 非标准参数（-X），**默认 JVM 实现这些参数的功能**，但是并不保证所有JVM实现都满足，且不保证向后兼容；
+3. 非 Stable 参数（-XX），此类参数各个 JVM 实现会有所不同，将来可能会随时取消，需要慎重使用；
 
-##### 03：JVM调参
+##### 03：JVM 调参
 
-- /Tomcat/apache-tomcat-8.5.40/bin/catalina.sh
+- catalina.sh
 
-- 添加JAVA_OPTS
+  - Apache Tomcat 的启动脚本之一，用于启动 Tomcat 服务器；
+
+  - 路径：/Tomcat/apache-tomcat-8.5.40/bin/catalina.sh
+
+    - ```shell
+      ./catalina.sh start
+      ./catalina.sh stop
+      ```
+
+- JVM 环境变量（JAVA_OPTS）
 
   - ```sh
-    -Xms9216m -Xmx9216m -XX:MetaspaceSize=2048m -XX:MaxMetaspaceSize=2048m -server 
-    -XX:MaxGCPauseMillis=200 -XX:-OmitStackTraceInFastThrow 
-    -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+DisableExplicitGC -XX:+UseG1GC 
-    -Djava.security.egd=file:/dev/./urandom -XX:+HeapDumpOnOutOfMemoryError 
-    -verbose:gc -Xlog:gc*:file=$CATALINA_BASE/.logs/gc.log:time,level,tags 
+    -Xmx9216m -XX:MaxMetaspaceSize=2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 
+    -Xlog:gc*:file=/homw/logs/gc.log:time,level,tags:filecount=5,filesize=10M
+    # OOM 是自动 dump 内存文件输出到指定目录
+    -XX:+HeapDumpOnOutOfMemoryError
     -XX:HeapDumpPath=$CATALINA_BASE/logs
     ```
-
+    
   - 堆配置
 
-    - -Xms2048m(or -XX:InitialHeapSize=2048m)
+    - -Xms2048m
       - 最小堆（初始化时堆的大小）
-    - -Xmx2048m(or -XX:MaxHeapSize=2048m)
+    - **-Xmx2048m**
       - 最大堆
     - -XX:NewSize=n
       - 设置年轻代大小
@@ -60,31 +67,15 @@
   - 元数据区
 
     - -XX:MetaspaceSize=256m 
-    - -XX:MaxMetaspaceSize=256m
+    - **-XX:MaxMetaspaceSize=256m**
 
-  - 收集器设置
+  - 垃圾回收信息
 
-    - -XX:+UseSerialGC :设置串行收集器
-    - -XX:+UseParallelGC :设置并行收集器
-    - -XX:+UseParalledlOldGC :设置并行年老代收集器
-    - -XX:+UseConcMarkSweepGC :设置并发收集器
-
-  - 垃圾回收统计信息
-
-    - -XX:+PrintGC
-    - -XX:+PrintGCDetails
-    - -XX:+PrintGCTimeStamps
-    - -Xloggc:filename
-
-  - 并行收集器设置
-
-    - -XX:ParallelGCThreads=n :设置并行收集器收集时使用的CPU数。并行收集线程数。
-    - -XX:MaxGCPauseMillis=n :设置并行收集最大暂停时间
-    - -XX:GCTimeRatio=n :设置垃圾回收时间占程序运行时间的百分比。公式为1/(1+n)
-
-  - 并发收集器设置
-
-    - -XX:+CMSIncrementalMode :设置为增量模式。适用于单CPU情况。
-    - -XX:ParallelGCThreads=n :设置并发收集器年轻代收集方式为并行收集时，使用的CPU数。并行收集线程数。
+    - -verbose:gc：启用 GC 日志输出；
+    - -XX:+PrintGCDetails：输出详细的 GC 日志信息；
+    - **-Xloggc:/home/appops/logs/gc.log**：gc 日志路径；
+    - -XX:+UseGCLogFileRotation：开启 GC 日志文件轮换；
+    - -XX:NumberOfGCLogFiles=10：日志文件总数量；
+    -  -XX:GCLogFileSize=10M：单个 GC 日志文件的最大大小；
 
   
