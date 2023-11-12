@@ -53,7 +53,7 @@
   - LinkedBlockingQuene：
     - 基于链表结构的有界阻塞队列，按FIFO排序任务，**吞吐量高于ArrayBlockingQuene**；
     - ExecutorService newFixedThreadPool( ) 使用此队列
-      - Executors.newFixedThreadpool（固定线程数）:禁用
+      - Executors.newFixedThreadpool（固定线程数）:禁用 
     - ThreadPoolTaskExecutor 默认也是此队列；
       - LinkedBlockingQueue时有一个大小限制，其默认为Integer.MAX_VALUE；
       - LinkedBlockingQueue不接受null值，当添加null的时候，会直接抛出NullPointerException；

@@ -231,8 +231,11 @@ public CompletableFuture<T>   exceptionally(Function<Throwable,? extends T> fn)
 CompletableFuture<Integer> future = CompletableFuture.supplyAsync(Main::getMoreData);
 // 第一个参数 v 为 future返回的结果, e 为异常类型
 Future<Integer> f = future.whenComplete((v, e) -> {
-  System.out.println(v);
-  System.out.println(e);
+    if (Objects.nonNull(e)) {
+         System.out.println(e);
+    }
+  	System.out.println(v);
+ 	System.out.println(e);
 });
 System.out.println(f.get());
 ```
@@ -300,8 +303,6 @@ public static CompletableFuture<Object> anyOf(CompletableFuture<?>... cfs)
       }
       return "abc";
   });
-  // 该返回值一般不使用，等待异步线程执行完，执行下一步操作
-  // CompletableFuture.allOf(future1,future2);
   CompletableFuture<Object> f =  CompletableFuture.anyOf(future1,future2);
   System.out.println(f.get());
   ```
@@ -324,5 +325,30 @@ public static <T> CompletableFuture<Stream<T>> sequence(
 }
 ```
 
+###### 超时设置 【Java 9】
 
+- `orTimeout(long timeout, TimeUnit unit)`：如果该 `CompletableFuture` 在指定的时间内没有完成，则将其完成异常（`CompletionException`）。
 
+- `completeOnTimeout(T value, long timeout, TimeUnit unit)`：如果该 `CompletableFuture` 在指定的时间内没有完成，则将其指定的值返回。
+
+- ```java
+  CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {"1"});
+  String result = future.orTimeout(1, TimeUnit.SECONDS).get();
+  future.completeOnTimeout("指定值：操作超时", 1, TimeUnit.SECONDS);
+  ```
+
+###### 延迟队列线程池
+
+- delayedExecutor(long delay, TimeUnit unit,  Executor executor)
+
+- 基于内存的，容易丢失，一般用 Redis ZSet
+
+- ```java
+  Executor executor = CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS,
+                                                        ForkJoinPool.commonPool()); 
+  CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+      // todo...
+  }, executor);
+  ```
+
+  

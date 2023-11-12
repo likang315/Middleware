@@ -527,6 +527,7 @@ public void addApplicationListener(ApplicationListener<?> listener) {
               @Override
               public void run() {
                   synchronized (startupShutdownMonitor) {
+                      // 容器销毁时，钩子清理资源
                       doClose();
                   }
               }

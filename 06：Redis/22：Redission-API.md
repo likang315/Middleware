@@ -125,14 +125,19 @@
 - BitSet 的扩展，使用了 m 个哈希函数，每个字符串跟 m 个bit对应，从而降低了冲突的概率。
 - 一般拥有判断某个数据，是否在大量数据集合里，容许一定的错误率；
   - 时间复杂度：O(m)，速度快；
+- 底层实际上是两个key，一个存放0,1值，一个是布隆配置；占用内存大小在初始化时就指定，不会更改；
+  - `size`: 布隆过滤器的大小，即使用多少个 bit 来存储数据。这个参数越大，则布隆过滤器的容量越大，但是也会占用更多的内存。
+  - `hashIterations`: 哈希函数的迭代次数。每一次迭代都会产生一个不同的哈希值，用于将元素映射到不同的 bit 上。迭代次数越多，则布隆过滤器的准确率越高，但是也会增加计算量。
+  - `expectedInsertions`: 预计要插入的元素数量。用来估算布隆过滤器的容量，以便更好地选择 `size` 参数的值。
+  - `falseProbability`: 期望的误判率，即布隆过滤器判断某个元素是否存在时，允许的最大误判率。
+
 
 ```java
-RClusteredBloomFilter<SomeObject> bloomFilter = redisson.getClusteredBloomFilter("sample");
-// 初始化布隆过滤器，预计统计元素数量为 255000000，期望误差率为0.03
-bloomFilter.tryInit(255000000L, 0.03);
-bloomFilter.add(new SomeObject("field1Value", "field2Value"));
-bloomFilter.add(new SomeObject("field5Value", "field8Value"));
-bloomFilter.contains(new SomeObject("field1Value", "field8Value"));
+RClusteredBloomFilter<String> bloomFilter = redisson.getClusteredBloomFilter("sample");
+// 初始化布隆过滤器，大小固定，一旦创建就不能更改，预计统计元素数量为 2000000，期望误差率为0.01
+bloomFilter.tryInit(2_000_000L, 0.01);
+bloomFilter.add("12312312");
+bloomFilter.contains("1");
 ```
 
 ##### 10：限流器（RateLimiter）

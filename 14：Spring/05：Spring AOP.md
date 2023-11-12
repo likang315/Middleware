@@ -139,16 +139,16 @@ public class Logging {
 ###### 定义切点的方式
 
 - execution：一般用于指定方法的执行，用的最多；
-- @args：当执行的**方法参数**类型上拥有**指定的注解时**生效。
+- @args：当执行的**方法参数**类型匹配时生效。
 - @annotation：当执行的方法上拥有**指定的注解时**生效。
 
 ###### execution()：用于匹配切点的执行方法，定义方式
 
 - execution(modifiers-pattern? ret-type-pattern declaring-type-pattern? name-pattern(param-pattern)throws-pattern?) 
-  - 修饰符匹配（modifier-pattern?）
+  - 访问修饰符匹配（modifier-pattern?）
   - 返回值匹配（ret-type-pattern）可以为*表示任何返回值,全路径的类名等
   - 类路径匹配（declaring-type-pattern?）
-  - 方法名匹配（name-pattern）可以指定方法名 或者 *代表所有, set* 代表以set开头的所有方法
+  - 方法名匹配（name-pattern）可以指定方法名 或者 代表所有, `set*` 代表以set开头的所有方法；
   - 参数匹配（(param-pattern)）可以指定具体的参数类型，多个参数间用“,”隔开，各个参数也可以用" * " 来表示匹配任意类型的参数，可以用(…)表示零个或多个任意参数；
   - 异常类型匹配（throws-pattern?）
   - ? ：代表该选项是可选的；
@@ -175,7 +175,7 @@ public void validateAccount(int account) {
 
 ###### ProceedingJoinPoint 【连接点对象】
 
-- 作用：任何一个增强方法都可以通过**将第一个入参声明为JoinPoint**，访问到连接点上下文的信息；
+- 作用：任何一个增强方法都可以通过**将第一个入参声明为JoinPoint**，访问到切点上下文的信息；
 
 - ProceedingJoinPoint 继承了JoinPoint接口
 

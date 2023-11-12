@@ -205,23 +205,23 @@ PUT /megacorp/employee/1
        "timed_out": false,
        "_shards": { ... },
        "hits": {
-                     "total":      3,
-                     "max_score":  1,
-                     "hits": [
-                       {
-                         "_index":         "megacorp",
-                         "_type":          "employee",
-                         "_id":            "3",
-                         "_score":         1,
-                         "_source": {
-                           "first_name":  "Douglas",
-                           "last_name":   "Fir",
-                           "age":         35,
-                           "about":       "I like to build cabinets",
-                           "interests": [ "forestry" ]
-                         }
-                       }
-                     ]
+           "total":      3,
+           "max_score":  1,
+           "hits": [
+               {
+                   "_index":         "megacorp",
+                   "_type":          "employee",
+                   "_id":            "3",
+                   "_score":         1,
+                   "_source": {
+                       "first_name":  "Douglas",
+                       "last_name":   "Fir",
+                       "age":         35,
+                       "about":       "I like to build cabinets",
+                       "interests": [ "forestry" ]
+                   }
+               }
+           ]
        }
      }
      ```
