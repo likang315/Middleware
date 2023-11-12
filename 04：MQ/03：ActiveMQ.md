@@ -4,18 +4,17 @@
 
 [TOC]
 
-- ActiveMQ 是Apache自己编写的MQ，不过性能较差，已弃用；
+##### 01：WEB 管理界面介绍
 
-##### 01：WEB管理界面介绍
+<img src="https://github.com/likang315/Middleware/blob/master/04：MQ/photos/WEB%E9%9D%A2%E6%9D%BF%E4%BB%8B%E7%BB%8D.png?raw=true" style="zoom:30%;" />
 
-![WEB面板介绍](https://github.com/likang315/Middleware/blob/master/MQ/photos/WEB%E9%9D%A2%E6%9D%BF%E4%BB%8B%E7%BB%8D.png?raw=true)
-
+- ActiveMQ 是 Apache 自己编写的MQ，不过性能较差；
 - Name：消息队列名称；
 - Number Of Pending Messages：在队列中等待消费的消息；
 - Number Of Consumers：消费者的数量；
 - Messages Enqueued：进入队列的消息，进入队列的总数量，包括出队列的；
 - Messages Dequeued：出了队列的消息，消费掉的消息数量；
-- Topic 时，消息会被不同的消费者消费，**Dequeued  > Enqueued**；
+- 有多个消费者订阅 Topic 时，消息会被不同的消费者消费，**Dequeued  > Enqueued**；
 
 ##### 02：Point-To-Point 模式【Queue】
 
@@ -144,7 +143,7 @@ public class Consumer {
 ##### 03：发布-订阅模式
 
 - 为什么要使用发布订阅模式？【解耦】
-  - 注册用户成功后发一封激活邮件，用户收到邮件后点击激活链接后才能使用该网站。一般的做法是在注册用户业务逻辑中调用发送邮件的逻辑。这样**用户业务就依赖于邮件业务**。如果以后改为短信激活，注册用户业务逻辑就必须修改为调用发送短信的逻辑。如果要注册后给用户加点积分，再加一段逻辑。经过多次修改，我们发现很**简单的注册用户业务已经越来越复杂，越来越难以维护**。这时候就需要**解耦**，将注册成功后的业务逻辑从用户业务中剥离出来，**谁需要消费我的消息，谁订阅就行**，这样Producer和Consumer互不知道对方的情况下完成了功能；
+  - 解耦，**谁需要消费我的消息，谁订阅就行**，这样 Producer 和 Consumer 互不知道对方的情况下完成了功能；
 
 ##### 04：publish-subscribe 模式【push】
 
