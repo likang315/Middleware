@@ -4,6 +4,15 @@
 
 [TOC]
 
+##### 00：Kafka 的客户端
+
+- ```xml
+  <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+  </dependency>
+  ```
+
 ##### 01：Kafka 使用场景
 
 1. 是否每个消息都很重要？是否允许丢失一小部分消息？
@@ -104,41 +113,37 @@ producer = new KafkaProducer<String, String>(kafkaProps);
   - 如果**acks=0**，生产者在成功写入消息之前**不会等待任何来自服务器的响应**。也就是说，如果当中出现了问题，导致服务器没有收到消息，那么生产者就**无从得知，消息也就丢失了**；
   - 如果**acks=1**，只要**分区的首领节点收到消息，生产者就会收到一个来自服务器的成功响应**。如果消息**无法到达首领节点（比如首领节点崩溃，新的首领还没有被选举出来），生产者会收到一个错误响应**，为了避免数据丢失，生产者会重发消息；
   - 如果**acks=all**，只有当**所有分区副本全部收到消息时**，生产者才会收到一个来自服务器的成功响应。这种模式是最安全的，它可以保证不止一个服务器收到消息，就算有服务器发生崩溃，整个集群仍然可以运行，延迟非常高；
-  
 - **buffer.memory**
   - 该参数用来设置**生产者内存缓冲区的大小**，生产者用它缓冲要发送到服务器的消息。如果应用程序**发送消息的速度超过发送到服务器的速度，会导致生产者空间不足**。这个时候，send() 方法调用要么被阻塞，要么抛出异常，取决于如何设置**block.on.buffer.full** 参数；
-
 - **retries**
   - 重试次数，**retries 参数的值决定了生产者可以重发消息的次数，如果达到这个次数，生产者会放弃重试并返回错误**。默认情况下，生产者会在**每次重试之间等待100ms**，不过可以通过 **retry.backoff.ms** 参数来改变这个时间间隔。建议在设置重试次数和重试时间间隔之前，先测试一下恢复一个崩溃节点需要多少时间（比如所有分区选举出首领需要多长时间），让**总的重试时间比 Kafka 集群从崩溃中恢复的时间长**，否则生产者会过早地放弃重试。一般情况下，因为**生产者会自动进行重试**，所以就没必要在代码逻辑里处理那些可重试的错误。你只需要处理那些不可重试的错误或**重试次数超出上限**的情况。
-
 - **batch.size**
   - 当**有多个消息需要被发送到同一个分区时，生产者会把它们放在同一个批次里**。该参数指定了**一个批次可以使用的内存大小，按照字节数计算（而不是消息个数）**。当批次被填满，批次里的所有消息会被发送出去。**不过生产者并不一定都会等到批次被填满才发送，半满的批次，甚至只包含一个消息的批次也有可能被发送。**所以就算把批次大小设置得很大，也不会造成延迟，只是会占用更多的内存而已。但如果设置得太小，因为生产者需要更频繁地发送消息，会增加一些额外的开销。
-
 - **linger.ms**
   - 该参数指定了**生产者在发送批次之前等待更多消息加入批次的时间**。KafkaProducer 会在**批次填满或linger.ms 达到上限时把批次发送出去**。默认情况下，只要有可用的线程，生产者就会把消息发送出去，就算批次里只有一个消息。
-  
 - client.id
 
   - 该参数可以是任意的字符串，服务器会用它来识别**消息的来源**。
-
 - max.in.flight.requests.per.connection
 
   - 该参数指定了**生产者在收到服务器响应之前可以发送多少个消息**。它的值越高，就会占用越多的内存，不过也会提升吞吐量。把它**设为1 可以保证消息是按照发送的顺序写入服务器的，即使发生了重试**。
-
 - timeout.ms、request.timeout.ms 和 metadata.fetch.timeout.ms
 
   - request.timeout.ms 指定了生产者在发送数据时等待服务器返回响应的时间，metadata.fetch.timeout.ms 指定了生产者在获取元数据（比如目标分区的首领是谁）时等待服务器返回响应的时间。如果等**待响应超时，那么生产者要么重试发送数据，要么返回一个错误**（抛出异常或执行回调）。timeout.ms 指定了broker 等待同步副本返回消息确认的时间，与asks 的配置相匹配——如果在指定时间内没有收到同步副本的确认，那么broker 就会返回一个错误。
-
 - max.block.ms
 
   - 该参数指定了在调用send() 方法或使用partitionsFor() 方法获取元数据时**生产者的阻塞时间**。当生产者的发送缓冲区已满，或者没有可用的元数据时，这些方法就会阻塞。**在阻塞时间达到max.block.ms 时，生产者会抛出超时异常。**
-
 - **max.request.size**
   - 该参数用于**控制生产者发送的请求大小**。它可以指能发送的**单个消息的最大值**，也可以指**单个请求里所有消息总的大小**。另外，broker 对可**接收的消息最大值**也有自己的限制（message.max.bytes），所以两边的配置最好可以匹配，避免生产者发送的消息被broker 拒绝。
-
 - receive.buffer.bytes 和 send.buffer.bytes
 
   - 这两个参数分别指定了 TCP socket 接收和发送数据包的缓冲区大小。如果它们被设为-1，就使用操作系统的默认值。
+- **enable.idempotence**
+  - 假设将生产者的 acks 设置为 all，并将 delivery.timeout.ms 设置为一个比较大的数，允许进行尽可能多的重试。
+    - 当broker 挂掉时，**重试发送的消息将被发送给新的首领，而这个首领已经有这条消息的副本**，因为之前写入的消息已经被成功复制给它了。
+
+  - 设置为 true 时，当幂等生产者被启用时，**生产者将给发送的每一条消息都加上一个序列号**。如果 broker 收到具有相同序列号的消息，那么它就会**拒绝第二个副本，而生产者则会收到 DuplicateSequenceException**，这个异常对生产者来说是无害的。
+
 
 
 ###### 顺序保证【重要】
@@ -190,20 +195,35 @@ producer = new KafkaProducer<String, String>(kafkaProps);
 
   - 只接受字符串作为键，如果不是字符串，就抛出异常;
 
-##### 08：Kafka 的客户端
+##### 08：标头（header）
 
-- ```xml
-  <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-clients</artifactId>
-  </dependency>
+- 可以在不改变记录键–值对的情况下向标头中添加一些有关记录的元数据。
+
+- 标头由一系列有序的键–值对组成；
+
+- ```java
+  ProducerRecord<String, String> record = new ProducerRecord<>("topic", "key", "value");
+  record.headers().add("origin", "YOLO".getBytes(StandardCharsets.UTF_8));
   ```
 
+##### 09：拦截器
 
+- Kafka 的 **ProducerInterceptor** 拦截器包含两个关键方法。
+  - **ProducerRecord<K, V> onSend(ProducerRecord<K, V> record)**
+    - 这个方法会在**记录被发送给 Kafka 之前**。重写该方法就可以捕获到有关记录的信息，甚至可以修改它。只需确保这个方法返回一个有效的ProducerRecord 对象。这个方法返回的记录将被序列化并发送给 Kafka。
+  - **void onAcknowledgement(RecordMetadata metadata, Exception exception)**
+    - 这个方法会在**收到 Kafka 的确认响应时调用**。如果覆盖了这个方法，则不可以修改 Kafka 返回的响应，但可以捕获到有关响应的信息。
 
+##### 10：配额
 
+- 可以限制生产消息和消费消息的速率，这是通过配额机制来实现的。
 
+- **Kafka 提供了 3 种配额类型：生产、消费和请求。**生产配额和消费配额限制了**客户端发送和接收数据的速率（以字节 / 秒为单位）**。请求配额限制了 broker 用于处理客户端请求的时间百分比。
 
+- 在配置文件中指定的配额都是静态的，如果要修改它们，则需要重启所有的 broker。因为随时都可能有新客户端加入，所以这种配置方式不是很方便。因此，特定客户端的配额通常采用动态配置。可以**用 kafka-config.sh 来动态设置配额**。
 
-
+  - ```shell
+    bin/kafka-configs --bootstrap-server localhost:9092 --alter --add-config 'producer_
+    byte_rate=1024,consumer_byte_rate=2048' --entity-name clientC --entity-type clients
+    ```
 

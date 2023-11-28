@@ -12,7 +12,7 @@
 
 - 在数据进行比较耗时的计算的情况下，**单个消费者无法跟上数据生成的速度，所以可以增加更多的消费者，让它们分担负载，每个消费者只处理部分分区的消息**，这就是**横向伸缩**的主要手段。我们有必要为主题创建大量的分区，在负载增长时可以加入更多的消费者；
 
-- ![](https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/ConsumerGroup.jpg?raw=true)
+- <img src="https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/ConsumerGroup.jpg?raw=true" style="zoom:70%;" />
 
 ###### 消费者群组和分区再均衡
 
@@ -23,15 +23,15 @@
 
 ###### 分区分配
 
-- **群组协调器—群主：**当消费者要加入群组时，它会向**群组协调器**发送一个JoinGroup 请求。第一个加入群组的消费者将成为**“群主”**。群主从协调器那里获得群组的成员列表（列表中包含了所有最近发送过心跳的消费者，它们被认为是活跃的），并**负责给每一个消费者分配分区**。它使用一个实现了PartitionAssignor 接口的类来决定哪些分区应该被分配给哪个消费者；
+- **群组协调器—群主：**当消费者要加入群组时，它会**向群组协调器发送一个 JoinGroup 请求**。第一个加入群组的消费者将成为**“群主”**。群主从协调器那里获得群组的成员列表（列表中包含了所有最近发送过心跳的消费者，它们被认为是活跃的），并**负责给每一个消费者分配分区**。它使用一个实现了 PartitionAssignor 接口的类来决定哪些分区应该被分配给哪个消费者；
 - 分配完毕之后，**群主把分配情况列表发送给群组协调器，协调器再把这些信息发送给所有消费者**。每个消费者只能看到自己的分配信息，只有群主知道群组里所有消费者的分配信息。
 
-##### 02：创建Kafka消费者
+##### 02：创建 Kafka 消费者
 
 - 在读取消息之前，需要先创建一个 KafkaConsumer 对象，只需要使用 3 个必要的属性：
 
   - bootstrap.servers：broker 地址；
-  - key.deserializer 和value.deserializer：将字节数组转换为java对象；
+  - key.deserializer 和 value.deserializer：将字节数组转换为java对象；
   - group.id：指定了KafkaConsumer 属于哪一个消费者群组；
 
 - ```java
@@ -88,7 +88,7 @@
   ```
 
   - 这是一个无限循环。**消费者实际上是一个长期运行的应用程序，它通过持续轮询向 Kafka 请求数据;**
-  - 消费者必须**持续对Kafka 进行轮询，否则会被认为已经死亡，它的分区会被移交给群组里的其他消费者**。传给，poll() 方法的参数是一个超时时间，用于**控制poll() 方法的阻塞时间**（在消费者的缓冲区里没有可用数据时会发生阻塞）。如果该参数被设为0，poll() 会立即返回，否则它会在指定的毫秒数内一直等待broker 返回数据；
+  - 消费者必须**持续对 Kafka 进行轮询，否则会被认为已经死亡，它的分区会被移交给群组里的其他消费者**。传给，poll() 方法的参数是一个超时时间，用于**控制poll() 方法的阻塞时间**（在消费者的缓冲区里没有可用数据时会发生阻塞）。如果该参数被设为0，poll() 会立即返回，否则它会在指定的毫秒数内一直等待broker 返回数据；
   - 每条记录都包含了记录所属主题的信息、记录所在分区的信息、记录在分区里的偏移量，以及记录的键值对；
   - 在退出应用程序之前使用**close() 方法关闭消费者**。网络连接和 socket 也会随之关闭，并立即**触发一次再均衡；**
 
@@ -128,31 +128,38 @@
      - 该策略会把主题的若干个**连续**的分区分配给消费者；
    - RoundRobin
      - 该策略把主题的所有分区**逐个分配**给消费者，会给所有消费者分配相**同数量的分区**（或最多就差一个分区）。
-
 8. client.id
 
    - 任意字符串，broker 用它来标识从客户端发送过来的消息；
-
-9. **max.poll.records**
--  用于控制**单次调用call() 方法能够返回的记录数量**，可以帮你控制在轮询里需要处理的数据量。
-10. receive.buffer.bytes 和 send.buffer.bytes
-
+9. group.instance.id
+   - 可以是任意具有唯一性的字符串，被用于消费者群组的固定名称；
+10. **max.poll.records**
+   - 用于控制**单次调用call() 方法能够返回的记录数量**，可以帮你控制在轮询里需要处理的数据量。
+11. **max.poll.interval.ms**
+    - 指定了消费者在被认为已经“死亡”之前可以**在多长时间内不发起轮询**。默认值：5min
+    - 心跳和会话超时是 Kafka **检测已“死亡”的消费者并撤销其分区的主要机制**。心跳是通过后台线程发送的，而后台线程有可能**在消费者主线程发生死锁的情况下继续发送心跳，但这个消费者并没有在读取分区里的数据**。当达到阈值被触及时，**后台线程将向 broker 发送一个“离开群组”的请求**，让 broker 知道这个消费者已经“死亡”，必须进行群组再均衡，然后停止发送心跳。
+12. receive.buffer.bytes 和 send.buffer.bytes
     - socket 在读写数据时用到的 TCP 缓冲区也可以设置大小。如果它们被设为-1，就使用操作系统的默认值；
-
+13. **offsets.retention.minutes**
+    - 是 broker 端的一个配置属性，但是它也会影响消费者的行为。只要消费者群组里有活跃的成员（有成员通过发送心跳来保持其身份），群组提交的每一个分区的最后一个偏移量就会被 Kafka 保留下来，在进行重分配或重启之后就可以获取到这些偏移量。但是，**如果一个消费者群组失去了所有成员，则 Kafka 只会按照这个属性指定的时间（默认为 7 天）保留偏移量。**
 
 ##### 06：提交和偏移量
 
 - 消费者可以使用 Kafka 来追踪消息在**分区里的位置（偏移量）**，一个位置就对应一条消息;
+
 - **提交（commit）：**更新分区当前位置的操作叫作**提交**;
+
 - **_consumer_offset**：消费者往一个叫作**_consumer_offset** 的特殊主题发送消息，消息里包含**每个分区的偏移量**。
   
   - 仅当消费者发生崩溃或者有新的消费者加入群组，就会触发再均衡，完成再均衡之后，每个消费者可能分配到新的分区，而不是之前处理的那个。此时，**消费者需要读取每个分区最后一次提交的偏移量**，然后从偏移量指定的地方继续处理。
+  
 - 如果**提交的偏移量小于客户端处理的最后一个消息的偏移量**，那么处于两个偏移量之间的消息就会被**重复消费；**
-- ![kafka_offset](https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/kafka_offset.png?raw=true)
+
+- <img src="https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/kafka_offset.png?raw=true" alt="kafka_offset" style="zoom:67%;" />
 
 - 如果**提交的偏移量大于客户端处理的最后一个消息的偏移量**，那么处于两个偏移量之间的消息**将会丢失；**
 
-  ![kafka_offset_lose](https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/kafka_offset_lose.png?raw=true)
+  <img src="https://github.com/likang315/Middleware/blob/master/04%EF%BC%9AMQ/photos/kafka_offset_lose.png?raw=true" alt="kafka_offset_lose" style="zoom:67%;" />
 
 ###### 自动提交
 
@@ -236,8 +243,7 @@
 - 消费者API 允许在调用 commitSync() 和 commitAsync() 方法时传进去希望提交的分区和偏移量的map；
 
 - ```java
-  private Map<TopicPartition, OffsetAndMetadata> currentOffsets =
-      new HashMap<>();
+  private Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
   int count = 0;
   ...
       while (true) {
@@ -268,7 +274,7 @@
 
 - 在**消费者失去对一个分区的所有权之前提交最后一个已处理记录的偏移量**。如果消费者准备了一个缓冲区用于处理偶发的事件，那么在失去分区所有权之前，需要处理在缓冲区累积下来的记录；
 
-- **再均衡**：在为消费者分配新分区或移除旧分区时，可以通过消费者API 执行一些应用程序代码，在调用subscribe() 方法时传进去一个 **ConsumerRebalanceListener** 实例就可以了。
+- **再均衡**：在为消费者分配新分区或移除旧分区时，可以通过消费者API 执行一些应用程序代码，在调用 subscribe() 方法时传进去一个 **ConsumerRebalanceListener** 实例就可以了。
 
   - ConsumerRebalanceListener 有两个需要实现的方法。
   - public void onPartitionsRevoked(Collection<TopicPartition> partitions) 
@@ -277,18 +283,17 @@
     - 会在重新分配分区之后和消费者开始读取消息之前被调用。
 
   ```java
-  private Map<TopicPartition, OffsetAndMetadata> currentOffsets =
-      new HashMap<>();
+  private Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
   private class HandleRebalance implements ConsumerRebalanceListener {
-      public void onPartitionsAssigned(Collection<TopicPartition>
-                                       partitions) {}
-      public void onPartitionsRevoked(Collection<TopicPartition>
-                                      partitions) {
+      public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
           System.out.println("Lost partitions in rebalance.Committing current offsets:" + 
                              currentOffsets);
+          // 将 socket 缓冲区的数据提交一下
           consumer.commitSync(currentOffsets);
       }
+      public void onPartitionsAssigned(Collection<TopicPartition> partitions) {}
   }
+  
   try {
       // 订阅主题时，把再均衡监听器传递给subscribe;
       consumer.subscribe(topics, new HandleRebalance());
@@ -326,8 +331,8 @@
 
 ##### 09：如何优雅退出轮询
 
-- consumer.wakeup() 是**消费者唯一一个可以从其他线程里安全调用的方法**。调用consumer.wakeup() 可以**退出poll()，并抛出WakeupException 异常**，或者如果调用consumer.wakeup() 时线程没有等待轮询，那么异常将在下一轮调用poll() 时抛出。该异常不用处理，这是一种跳出循环的方式，不过在退出线程之前调用consumer.close() 是很有必要的，它会提交任何还没有提交的东西，并向群组协调器发送消息，告知自己要离开群组，接下来就会触发再均衡，而不需要等待会话超时；
-- 如果确定要退出循环，需要通过**另一个线程调用consumer.wakeup()方法**；
+- consumer.wakeup() 是**消费者唯一一个可以从其他线程里安全调用的方法**。调用consumer.wakeup() 可以**退出poll()，并抛出WakeupException 异常**，或者如果调用consumer.wakeup() 时线程没有等待轮询，那么异常将在下一轮调用poll() 时抛出。该异常不用处理，这是一种跳出循环的方式，不过在退出线程之前调用 consumer.close() 是很有必要的，它会提交任何还没有提交的东西，并向群组协调器发送消息，告知自己要离开群组，接下来就会触发再均衡，而不需要等待会话超时；
+- 如果确定要退出循环，需要通过**另一个线程调用 consumer.wakeup() 方法**；
 
 ##### 10：反序列化器
 
@@ -336,11 +341,11 @@
 
 ###### 自定义反序列化器
 
-- 实现Deserializer接口，重写deserialize(String topic，byte[ ] data);
+- 实现 Deserializer 接口，重写deserialize(String topic，byte[ ] data);
 
 ##### 11：独立消费者（没有群组的消费者）
 
-- 可能只需要一个**消费者从一个主题的所有分区或者某个特定的分区读取数据**。这个时候就不需要消费者群组和再均衡了，只需要把**主题或者分区分配给消费者**，然后开始读取消息并提交偏移量；
+- 只需要一个**消费者从一个主题的所有分区或者某个特定的分区读取数据**。这个时候就不需要消费者群组和再均衡了，只需要把**主题或者分区分配给消费者**，然后开始读取消息并提交偏移量；
 
 - ```java
   // 向群组协调器获取分区信息
