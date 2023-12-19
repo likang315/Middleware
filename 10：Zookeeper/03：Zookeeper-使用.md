@@ -1,4 +1,4 @@
-### 使用Zookeeper
+### Zookeeper 使用
 
 ------
 
@@ -63,11 +63,11 @@
   - zkCleanup： 清理 ZooKeeper 历史数据，包括事务日志文件和快照数据文件；
   - zkCli：zk 的一个简易客户端；
   - zkEnv：设置zk的环境变量；
-  - zkServer：zk服务器的启动、停止和重启脚本；
+  - **zkServer：zk 服务器的启动、停止和重启脚本；**
 
 ###### 停止服务
 
-- sh zkServer.sh stop
+- zkServer.sh stop
 
 ##### 03：客户端脚本
 
@@ -88,11 +88,11 @@
 
 - ls
   - 列出zk指定节点的所有子节点；
-  - ls path [watch]
+  - ls path [-s]
     - path：数据节点的节点路径；
 - get
   - 获取ZooKeeper指定节点的数据内容和属性信息；
-  - get path [watch]
+  - get path [-s]
 
 ###### 更新
 

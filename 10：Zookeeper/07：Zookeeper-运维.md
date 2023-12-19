@@ -9,19 +9,19 @@
 | 参数名                        | 说明                                                         |
 | ----------------------------- | ------------------------------------------------------------ |
 | clientPort                    | 用于配置当前服务器对外的服务端口，客户端通过该端口与Zk服务器创建连接，一般设置为：2181，无默认值，必须配置，不支持系统属性方式配置。 |
-| dataDir                       | 用于配置ZK服务器存储快照文件的目录。默认情况下，如果没有配置dataLogDir 参数，那么事务日志也会存储在该目录下。由于事务日志量大，导致ZK 整体服务能力降低，因此建议单独配置。 |
-| tickTime                      | 用于配置ZK 中最小时间单元的长度。默认值：3000，单位：毫秒（ms） |
+| dataDir                       | 用于配置ZK服务器存储快照文件的目录。默认情况下，如果没有配置 dataLogDir 参数，那么事务日志也会存储在该目录下。由于事务日志量大，导致ZK 整体服务能力降低，因此建议单独配置。 |
+| tickTime                      | 用于配置  ZK 中最小时间单元的长度。默认值：3000，单位：毫秒（ms） |
 | **高级配置**                  |                                                              |
 | dataLogDir                    | 用于配置 ZK 服务器存储事务日志文件的目录，建议单独配置一个磁盘。 |
-| initLimit                     | 用于配置Leader服务器等待Follower启动，并完成数据同步的时间。默认值：10，表示：tickTime 的10倍。 |
+| initLimit                     | 用于配置 Leader 服务器等待 Follower 启动，并完成数据同步的时间。默认值：10，表示：tickTime 的10倍。 |
 | syncLimit                     | 用于配置Leader服务器和Follower之间进行心跳检测的最大延时时间。默认值：5，表示：tickTime 的 10 倍。 |
 | snapCount                     | 用于配置相邻两次快照之间的事务操作次数，默认值：100000。     |
 | minSessionTimeout             | 用于服务对端客户端会话的超时时间进行限制。默认是tickTIme 的2倍。 |
 | maxSessionTimeout             | 默认是tickTime 的20倍。                                      |
 | maxClientCnxns                | 用户限制单台客户端与单台服务器之间的并发连接数。默认值：60。too many connections |
-| **server.id=host:port:port**  | 该参数用于配置组成ZooKeeper集群的机器列表，其中id即为ServerID，与每台服务器myid文件中的数字相对应。<br/>第一个端口：用于指定Follower服务器与Leader进行 运行时通信和数据同步时所使用的端口<br />第二个端口：用于进行Leader选举过程中的投票通信。 |
+| **server.id=host:port:port**  | 该参数用于配置组成ZooKeeper集群的机器列表，其中id即为ServerID，与每台服务器myid文件中的数字相对应。<br/>第一个端口：用于指定 Follower 服务器与Leader进行 **运行时通信和数据同步**时所使用的端口；<br />第二个端口：用于进行Leader**选举过程中的投票通信**。 |
 | **autopurge.snapRetainCount** | 配置在自动清理文件时，需要**保留的快照数据文件数量和对应的事务日志文件**。默认值：3 |
-| **autopurge.purgeInterval**   | 用于配置ZK对历史文件自动清理的频率。默认是：0（表示不开启），单位是小时。 |
+| **autopurge.purgeInterval**   | 用于配置 ZK 对历史文件自动清理的频率。默认是：0（表示不开启），单位是小时。 |
 
 ##### 02：常用命令
 
@@ -50,7 +50,7 @@
 
 - 对运行时 Java 系统的管控。
 - JConsole：(Java监视和管理控制台) 是一个Java内置的基于JMX的图形管理化工具。是最常用的JMX连接器。
-- 可以使用 JConsole 来进行ZooKeeper的 JMX 管理。
+- 可以使用 JConsole 来进行 ZooKeeper的 JMX 管理。
 
 ##### 04：如何构键一个高可用 ZK 集群
 
@@ -65,7 +65,7 @@
 
 ##### 05：日常运维
 
-###### 纯Shell 脚本进行清理
+###### 纯 Shell 脚本进行清理
 
 - 将清除脚本配置到 crontab 中，设置执行时间；
 
@@ -73,7 +73,7 @@
 
 ###### 自动清理机制
 
-- 通过配置：autopurge.snapRetainCount和autopurge.purgeInterval这两个参数来实现定时清理。
+- 通过配置：autopurge.snapRetainCount和autopurge.purgeInterval 这两个参数来实现定时清理。
 
 
 
