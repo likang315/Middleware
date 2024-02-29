@@ -1,4 +1,4 @@
-### ThreadLocal <T>
+### ThreadLocal`<T>`
 
 ------
 
@@ -6,47 +6,61 @@
 
 ##### 01：概述
 
-- 即**线程变量，**一个以当前线程的 ThreadLocal 对象为键—该对象的值为值的存储结构，这个结构被附在线程上，也就是说每个线程都可以根据 threadLocalMap 查询到绑定在这个线程上该变量的值。
-- 被其修饰的变量在多线程环境下访问时，能**保证各个线程里的变量相对独立于其他线程内的变量**。
+- 即**线程变量，**它提供了线程局部变量的机制。使用 ThreadLocal 可以**在每个线程中存储独立的变量副本，这些变量对于不同的线程是隔离的**。
+- 确保被其修饰的变量在多线程环境下访问时，能**保证各个线程里的变量相对独立于其他线程内的变量**。
 - **泛型中存储的是共享变量，ThreadLocalMap 的 Entry[ ] 中，key为当前线程的 Threadlocal 变量，value为当前线程的共享变量值。**
-- 锁一般是以时间换空间，而ThreadLocal是以空间换时间。
+- 锁一般是以时间换空间，而 ThreadLocal 是以空间换时间。
 - ThreadLocal 实例通常来说都是 private static 类型的，用于关联线程和线程的上下文。
 
-##### 02：方法：只有以下四个方法可以被重写
+##### 02：方法：只有四个方法可以被重写
 
-- ThreadLocal< S > withInitial(Supplier<? extends S> supplier)
+- ThreadLocal`<S>` withInitial(Supplier<? extends S> supplier)
   - 用于创建线程变量；
 - protected initialValue() 
   - 在调用 get() 的时候会第一次调用该方法，但是如果一开始就调用了set()，则该函数不会被调用；
-- T   get()
+- T  get()
 - void`  `set(T value)
 - void remove()
+  - 需要在使用完变量后**手动调用 remove 方法清除当前线程的变量副本**，否则可能会导致内存泄漏；
+
 
 ##### 03：ThreadLocalMap【源码剖析】
 
-- ThreadLocal 的一个内部类，是一个定制的哈希映射，仅适用于维护线程本地值，**哈希表Entry使用了对键的弱引用**，有助于GC回收；
+- ThreadLocal 的一个内部类，是一个定制的 Map，仅适用于维护线程本地值，**哈希表 Entry 使用了对键的弱引用**，有助于GC回收；
+- ThreadLocalMap是Thread类的一个字段，它用于存储线程本地变量。每个线程可以在自己的ThreadLocalMap中存储和访问其本地变量，这样可以保证线程本地变量的隔离性和独立性。
 
-###### 特性：
+###### 特性
 
-1. 通过 getMap() 获取**每个线程 Thread 持有自己的ThreadLocalMap实例**, 因此它们是不存在并发竞争的，可以理解为每个线程有自己的变量副本；
-2. ThreadLocalMap 中 Entry[] 数组存储数据，初始化长度16，后续每次都是2倍扩容。主线程中定义了几个变量，Entry[]才有几个key；
-3. Entry 的 key是对 **当前线程ThreadLocal的弱引用**，当抛弃掉ThreadLocal对象时，垃圾收集器会忽略这个key的引用而清理掉 ThreadLocal 对象，**防止内存泄漏**；
-4. 如果 Threadlocal 在线程中还被**使用的时候他是一个强引用（new  ThreadLocal）**，而作为强引用的时候，他在ThreadLocalMap中的key 这个弱引用就不会被GC收掉；
+1. 通过 getMap() 获取**每个线程 Thread 持有自己的ThreadLocalMap实例**，因此它们是不存在并发竞争的，可以理解为每个线程有自己的变量副本；
+2. ThreadLocalMap 中 Entry[] 数组存储数据，初始化长度16，后续每次都是2倍扩容；
+3. Entry 的 key 是对 **当前线程 ThreadLocal 的弱引用**，当抛弃掉 ThreadLocal 对象时，垃圾收集器会忽略这个 key 的引用而清理掉 ThreadLocal 对象，**防止内存泄漏**；
+   - 如果 Threadlocal 在线程中还被**使用的时候他是一个强引用（new  ThreadLocal）**，而作为强引用的时候，他在ThreadLocalMap中的 key 这个弱引用就不会被GC收掉；
+
 
 ```java
+public class Thread implements Runnable {
+    // 每个线程都有自己的 ThreadLocalMap
+    ThreadLocal.ThreadLocalMap threadLocals = null;
+}
+
+/**
+* 封装了操作的方式
+*/
 public class ThreadLocal<T> {
     // 若没有调用set()时，第一次调用get()方法，自动调用
     protected T initialValue() {
         return null;
     }
-    // 获取当前线程的ThreadLocalMap
+    
+    // 获取当前线程自己的ThreadLocalMap
     ThreadLocalMap getMap(Thread t) {
         return t.threadLocals;
     }
+    
     // 获取当前线程的存储的value
     public T get() {
         Thread t = Thread.currentThread();
-        // 获取当期线程自己的map
+        // 获取当前线程自己的map
         ThreadLocalMap map = getMap(t);
         if (map != null) {
             // this:当前线程的threadlocal对象
@@ -101,7 +115,7 @@ public class ThreadLocal<T> {
 
     // innner Class
     static class ThreadLocalMap {
-        // value 是弱引用
+        // value 是弱引用，只要扫到就被销毁
         static class Entry extends WeakReference<ThreadLocal<?>> {
             Object value;
             Entry(ThreadLocal<?> k, Object v) {
@@ -109,12 +123,14 @@ public class ThreadLocal<T> {
                 value = v;
             }
         }
+        // map 关键字段
         private Entry[] table;
         ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
             table = new Entry[INITIAL_CAPACITY];
             // 通过标存储相同的key，不同的值
             int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
             table[i] = new Entry(firstKey, firstValue);
+            // entry 长度正常恒定为 1
             size = 1;
             setThreshold(INITIAL_CAPACITY);
         }
@@ -122,7 +138,7 @@ public class ThreadLocal<T> {
 }
 ```
 
-##### 04：示例：
+##### 04：示例
 
 - SImpleDateFormat：线程不安全的
 
@@ -131,19 +147,25 @@ public class ThreadLocal<T> {
 private static ThreadLocal<SimpleDateFormat> localDateFormat =
     ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
 
-for (int i = 0; i < 5; i++) {
-    executorService.submit(() -> {
-        for (int j = 0; j < 100; j++) {
-            Date date;
-            try {
-                // 获取每个线程对应的该变量
-                date = localDateFormat.get().parse(dateString);
-                log.info("parsed date:{}", date);
-            } catch (Exception e) {
-                log.warn("got exception while parsing {}", dateString, e);
+public static void main(String[] args) throws InterruptedException {
+    String dateString = "2024-02-28 12:00:00.000";
+    for (int i = 0; i < 5; i++) {
+        CompletableFuture.runAsync(() -> {
+            for (int j = 0; j < 100; j++) {
+                Date date;
+                try {
+                    // 获取每个线程对应的该变量
+                    date = localDateFormat.get().parse(dateString);
+                    System.out.println(date);
+                } catch (Exception e) {
+                    log.warn("got exception while parsing {}", dateString, e);
+                }
             }
-        }
-    });
+            localDateFormat.remove();
+        });
+    }
+
+    TimeUnit.HOURS.sleep(1);
 }
 ```
 

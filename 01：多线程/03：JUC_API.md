@@ -1,18 +1,17 @@
-###  JUC_API
+###  JUC API
 
 ------
 
 [TOC]
 
-##### 01：继承Thread类，重写run() 
+##### 01：继承 Thread 类，重写run() 
 
-- 启动线程指调用start()，而并不是调用run()，当线程的start()被调用后，线程进入Runnable状态，等待获取cpu,一旦获取CPU时间片，run()自动被调用，即运行程序；
+- 启动线程指调用 start() ，而并不是调用run()，当线程的start()被调用后，线程进入 Runnable 状态，等待获取cpu，一旦获取CPU时间片，run()自动被调用，即运行程序，进入 Running 状态；
 
 
-###### 缺点：
+###### 缺点
 
-- 由于Java单继承，当继承了 Thread 类后就无法再继承其它类
-- 由于继承了 Thread 后重写run()规定了线程执行的任务，这导致线程与任务有一个必然的耦合关系，不利于线程的重用；
+- 由于 Java 单继承，当继承了 Thread 类后就无法再继承其它类；
 
 ```java
 Thread thread = new Thread() {
@@ -44,12 +43,9 @@ Runnable runnable = new Runnable() {
 executorServices.execute(runnable);
 ```
 
-##### 03：实现 Callable 接口，重写call()，并且有返回值，可抛出异常
+##### 03：实现 Callable 接口，重写call()，有返回值
 
 ```java
-import java.util.concurrent.Callable;  
-import java.util.concurrent.ExecutionException;  
-import java.util.concurrent.FutureTask;
 public class CallableThreadTest implements Callable<List<String>> {
     // 每个线程最多执行1s
     private static final long TASK_TIME_OUT = 1000ms;
@@ -62,7 +58,7 @@ public class CallableThreadTest implements Callable<List<String>> {
         return new ArrayList<String>.add(name);  
     }
 
-    // 学习回收结果的方法
+    // 学习回收结果的方法【过时】
     public static void main(String[] args) {  
         // 存储每个线程执行任务的返回值
         List<List<String>> futureTask = new ArrayList<>();
@@ -104,24 +100,28 @@ public class CallableThreadTest implements Callable<List<String>> {
 
 ###### 方法:
 
-- void notify()：通知线程
+- void **notify()**：通知线程
   
-  - 仅仅任意通知一个处于阻塞的线程，不释放锁资源，执行体运行完成之后释放。
-- void join(long millis) 
-  - join( )：默认等待 0 毫秒
+  - 仅任意通知一个处于阻塞的线程，**不释放锁资源，执行体运行完成之后释放**。
+- void **join(long millis)** 
+  - join( )：默认等待 0 毫秒；
   
-  - 执行调用 join() 的线程进入 TIMED_WAITING 状态，等待 join() 所属线程运行结束后再继续运行，底层调用Object.wait()
+  - 执行**调用 join() 的线程进入 TIMED_WAITING 状态，等待 join() 所属线程运行结束后再继续运行**，底层调用 Object.wait()；
   
-  - 如果一个线程A执行了thread.join()语句，其含义是：**当前线程A等待thread线程终止之后才从thread.join()返回**。线程Thread除了提供join()方法之外，还提供了join(long millis)和join(longmillis,int nanos)两个具备超时特性的方法，如果线程thread在给定的超时时间里没有终止，那么将会从该超时方法中返回；
+  - 如果一个线程A执行了thread.join()语句，其含义是：**当前线程 A 等待 thread 线程终止之后才从 thread.join() 返回**。
   
+    - 两个具备超时特性的方法，如果线程thread在给定的超时时间里没有终止，那么将会从该超时方法中返回；
+      - join(long millis)
+      - join(longmillis, int nanos)
+    
     ```java
-    // 创建了10个线程，编号0~9，每个线程调用前一个线程的join()方法，也就是线程0结束了，线程1才能从join()方法中返回，而线程0需要等待main线程结束
+    // 创建了10个线程，编号0~9，依次输出 0-9
     public class Join {
         public static void main(String[] args) throws Exception {
             Thread previous = Thread.currentThread();
             for (int i = 0; i < 10; i++) {
                 // 每个线程拥有前一个线程的引用，需要等待前一个线程终止，才能从等待中返回
-                Thread thread = new Thread(new Domino(previous), String.valueOf(i));
+                Thread thread = new Thread(new Domino(previous, i), String.valueOf(i));
                 thread.start();
                 previous = thread;
             }
@@ -129,8 +129,10 @@ public class CallableThreadTest implements Callable<List<String>> {
         }
         static class Domino implements Runnable {
             private Thread thread;
-            public Domino(Thread thread) {
+            private int i;
+            public Domino(Thread thread, int i) {
                 this.thread = thread;
+                this.i = i；
             }
             @Override
             public void run() {
@@ -138,15 +140,16 @@ public class CallableThreadTest implements Callable<List<String>> {
                     thread.join();
                 } catch (InterruptedException e) {
                 }
-                System.out.println(Thread.currentThread().getName() + " terminate.");
+                System.out.println(Thread.currentThread().getName() + " terminate." + i);
             }
         }
     }
     ```
+    
   
-- **static** void sleep(long millis) ：线程休眠
+- static void **sleep(long millis)** ：线程休眠
   
-  - 在指定的毫秒数内让当前正在执行的线程休眠（暂停执行），不释放锁资源，监控状态继续保持，时间到则重新为就绪状态
+  - 在指定的毫秒数内让当前正在执行的线程休眠（暂停执行），**让出时间片，不释放锁资源**；
   
   - ```java
     TimeUnit.SECONDS.sleep(5);
@@ -157,7 +160,7 @@ public class CallableThreadTest implements Callable<List<String>> {
   - 暂停当前正在执行的线程对象，让出时间片，由运行状态到就绪状态，等待获取时间片；
 - void interrupt ()
   
-  - 中断线程并且抛出一个InterruptedException异常，处理异常，虚拟机不会退出，线程之后的代码会继续执行
+  - 中断线程并且抛出一个InterruptedException异常，处理异常，虚拟机不会退出，线程之后的代码会继续执行；
 - void setPriority(int newPriority) 
   
   - 更改线程的优先级
@@ -190,27 +193,28 @@ public class Main {
             pool.execute(runnable);
         }
     }
-}
-
-class CountRunnable implements Runnable {
-    private CountDownLatch latch;
-    public CountRunnable(CountDownLatch latch) {
-        this.latch = latch;
-    }
-    @Override
-    public void run() {
-        try {
-            synchronized (latch) {
-                latch.countDown();
-                System.out.println("thread counts = " + (countDownLatch.getCount()));
+    
+    static class CountRunnable implements Runnable {
+        private CountDownLatch latch;
+        public CountRunnable(CountDownLatch latch) {
+            this.latch = latch;
+        }
+        @Override
+        public void run() {
+            try {
+                synchronized (latch) {
+                    latch.countDown();
+                    System.out.println("thread counts = " + (latch.getCount()));
+                }
+                // 每个线程都在等待...其实就是省了通知
+                latch.await();
+                System.out.println("concurrency counts =" + (100 - latch.getCount()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            // 每个线程都在等待...其实就是省了通知
-            latch.await();
-            System.out.println("concurrency counts =" + (100-countDownLatch.getCount()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
+
 }
 ```
 
@@ -220,20 +224,21 @@ class CountRunnable implements Runnable {
 
 ​	**循环屏障**，可以让一组线程达到一个屏障时被阻塞，直到最后一个线程达到屏障时，所有被阻塞的线程才能继续执行，可以循环使用此同步屏障；
 
-- CyclicBarrier就像一扇门，默认情况下关闭状态，堵住了线程执行的道路，直到所有线程都就位，门才打开，让所有线程一起通过；
-- CyclicBarrier实现主要基于ReentrantLock
+- CyclicBarrier：就像一扇门，默认情况下关闭状态；
+- CyclicBarrier 实现主要基于 ReentrantLock
 
 ###### 构造方法
 
 - CyclicBarrier(int parties)
   - 其参数表示同步屏障拦截的线程数量，每个线程调用await( )，告诉CyclicBarrier已经到达屏障位置，线程被阻塞;
 - CyclicBarrier(int parties, Runnable barrierAction)
-  - 其中barrierAction任务会在所有线程到达屏障后执行
+  - **其中 barrierAction 任务会在所有线程到达屏障后执行**；
 
-###### 方法：
+###### 方法
 
 - int   await( )
-  - 当线程执行await( )时，内部变量count减1，如果count！= 0，说明有线程还未到屏障处，是该线程处于等等待状态
+  - 当线程执行await( )时，内部变量count减1，如果count！= 0，说明有线程还未到屏障处，是该线程处于等待状态；
+  - 当足够数量的线程都调用了await()后，CyclicBarrier **会自动重新开始下一轮的计数**；
 - int   await(long timeout, TimeUnit unit)
   - 指线程等待的超时时间，当出现等待超时的时候，当前线程会被释放，但会像其他线程传播出BrokenBarrierException异常。
 - int   getNumberWaiting()
@@ -263,11 +268,9 @@ public class MyThread extends Thread {
             try {
                 // 阻塞直到所需线程都来时，再执行
                 cyclicBarrier.await();
-              
                 System.out.println("111111111111111111111111");
                 // 再次使用循环屏障
                 cyclicBarrier.await();
-             
             } catch (BrokenBarrierException e) {            
                 e.printStackTrace();
             }
@@ -290,19 +293,19 @@ public class MyThread extends Thread {
 }
 ```
 
-##### 07：CyclicBarrier与CountDownLatch的区别
+##### 07：CyclicBarrier 与 CountDownLatch的区别
 
-1. CountDownLatch 允许一个或多个线程等待一些特定的操作完成，而**这些操作是在其它的线程中**进行的，也就是说会出现 **等待的线程** 和 **被等的线程** 这样分明的角色
+1. CountDownLatch 允许一个或多个线程等待一些特定的操作完成，而**这些操作是在其它的线程中**进行的，也就是说会出现 **等待的线程** 和 **被等的线程** 这样分明的角色；
 3. CountDownLatch 是**一次性使用的**，也就是说latch门闩只能只用一次，一旦latch门闩被打开就不能再次关闭，将会一直保持打开状态；
 
 ###### java.util.concurrent
 
 ##### 08：Semaphore
 
-​	用于**限制访问某些资源的线程数目，它维护了一个信号量集合**，有多少资源需要限制就维护多少信号量集合，假如这里有N个资源，那就对应于N个信号量，同一时刻也只能有N个线程访问。一个线程获取信号量就调用acquire方法，用完了释放资源就调用release方法。
+​	用于**限制访问某些资源的线程数目，它维护了一个信号量集合**，有多少资源需要限制就维护多少信号量集合，假如这里有N个资源，那就对应于N个信号量，同一时刻也只能有N个线程访问。**一个线程获取信号量就调用 acquire 方法，用完了释放资源就调用 release 方法。**
 
-- Semaphore是资源的互斥而不是资源的同步，在同一时刻是无法保证同步的，但是却可以保证资源的互斥；
-- Semaphore底层是由AQS和Uasafe实现的；
+- Semaphore 是资源的互斥而不是资源的同步，在同一时刻是无法保证同步的，但是却可以保证资源的互斥；
+- **Semaphore 底层是由 AQS 实现的；**
 
 ###### 方法：
 
@@ -313,7 +316,8 @@ public class MyThread extends Thread {
 - acquire(int permits)
   - 从此信号量获取给定数目的许可，在提供这些许可证前一直将线程阻塞，或者线程已被中断。
 - release(int permits)
-  - 释放给定数目的许可，将其返回到信号量。这个是对应于上面的方法，一个学生占几个窗口完事之后还要释放多少，**要是没有资源就释放的话，会自动+1**；
+  - 释放给定数目的许可，将其返回到信号量。这个是对应于上面的方法，一个学生占几个窗口完事之后还要释放多少；
+  - **当Semaphore没有许可证可用时，调用 release() 方法会增加Semaphore的许可证计数（+1）**；
 - availablePermits()
   - 返回此信号量中当前可用的许可数。
 - reducePermits(int reduction)
@@ -328,55 +332,48 @@ public class MyThread extends Thread {
   - 从此信号量获取给定数目的许可，在提供这些许可前一直将线程阻塞。
 
 ```java
-// 三个许可证
-private static Semaphore semaphore = new Semaphore(3);
-public static void main(String[] args) {
-    for (int i = 0; i < 10; i++) {
-        new Student(Integer.toString(i), semaphore).start();
-    }
-}
-
-static class Student extends Thread {
-    private String name;
-    private Semaphore semaphore;
-    public Student(String name, Semaphore semaphore) {
-        this.name = name;
-        this.semaphore = semaphore;
-    }
-
-    @Override
-    public void run() {
+// 用于控制线程池任务进入阻塞队列中, semaphore = coreSize
+private Semaphore AUTO_SPIDER_SEMAPHORE = new Semaphore(10);
+public void autoSpiderService() {
+    while (isRunning) {
+        String task;
         try {
-            semaphore.acquire();
-            System.out.println(name + "获取取餐的许可");
-            TimeUnit.MICROSECONDS.sleep(10003);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println(name + "取餐完毕，释放窗口资源");
-            semaphore.release();
+            AUTO_SPIDER_SEMAPHORE.acquire();
+            task = redisson.popForLayerQueue();
+            if (Objects.isNull(task)) {
+                TimeUnit.SECONDS.sleep(1);
+                AUTO_SPIDER_SEMAPHORE.release();
+                continue;
+            }
+            String finalTask = task;
+            CompletableFuture.runAsync(() -> {
+                try {
+                    // 执行任务
+                } catch (Exception e) {
+                    log.error("async thread exec fail, task：{}", task, e);
+                } finally {
+                    AUTO_SPIDER_SEMAPHORE.release();
+                }
+            }, autoLayerUrlThreadPool);
+        } catch (Exception e) {
+            log.error("task: {}, permits: {}", task, AUTO_SPIDER_SEMAPHORE.availablePermits(), e);
+            AUTO_SPIDER_SEMAPHORE.release();
         }
     }
 }
 ```
 
-##### 09：综合示例
+###### 信号量的传递
 
 ```java
 /**
  * 实例化3个线程，一个线程打印a，一个打印b，一个打印c，三个线程同时执行，要求打印出6个连着的abc
  * 信号量的传递...
+ *
  * @author kang.li
  * @date 2020-08-04 14:51
  */
-@Slf4j
 public class Question1 {
-
-    /**
-     * 需要等待的线程数，后面的线程用于测试输出
-     */
-    private static final CyclicBarrier BARRIER = new CyclicBarrier(3, () -> log.info("start print........."));
-
     /**
      * 控制A线程顺序
      */
@@ -402,15 +399,13 @@ public class Question1 {
         CompletableFuture.runAsync(() -> {
             for (int i = 0; i < COUNT; i++) {
                 try {
-                    BARRIER.await();
                     firstSemaphore.acquire();
-                    log.info("A");
+                    System.out.println("A" + i);
                     secondSemaphore.release();
                 } catch (InterruptedException | BrokenBarrierException e) {
                     log.error("Question1.init_A: " + e.getMessage());
                 }
             }
-
         });
     }
 
@@ -421,15 +416,13 @@ public class Question1 {
         CompletableFuture.runAsync(() -> {
             for (int i = 0; i < COUNT; i++) {
                 try {
-                    BARRIER.await();
                     secondSemaphore.acquire();
-                    log.info("B");
+                    System.out.println("B" + i);
                     thirdSemaphore.release();
                 } catch (InterruptedException | BrokenBarrierException e) {
                     log.error("Question1.init_B: " + e.getMessage());
                 }
             }
-
         });
     }
 
@@ -440,25 +433,24 @@ public class Question1 {
         CompletableFuture.runAsync(() -> {
             for (int i = 0; i < COUNT; i++) {
                 try {
-                    BARRIER.await();
                     thirdSemaphore.acquire();
-                    log.info("C");
+                    System.out.println("C" + i);
                     firstSemaphore.release();
                 } catch (InterruptedException | BrokenBarrierException e) {
                     log.error("Question1.init_C: " + e.getMessage());
                 }
             }
-
         });
     }
 
     /**
      * 初始化三个打印线程
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         init_A();
         init_B();
         init_C();
+        TimeUnit.SECONDS.sleep(1000000);
     }
 }
 ```
