@@ -6,32 +6,33 @@
 
 ##### 01：synchronized
 
-​	Java中的关键字，是一种**同步锁，为重量级锁**，即从当前线程所携带的对象中获取monitor锁；
+​	Java 中的关键字，是一种**同步锁，为重量级可重入锁**，即当前线程可以获取**特定对象**的监视器锁。
 
 ###### 作为锁的对象
 
-- 对于静态同步方法，锁是当前类的Class对象
-- 对于同步方法块，锁是Synchonized括号里配置的对象
-- 当一个线程试图访问同步代码块时，它首先必须得到锁，退出或抛出异常时必须释放锁
+- 对于静态同步方法，锁是当前**类的Class对象**；
+- 对于同步方法，锁是**方法的调用对象**；
+- 对于同步方法块，锁是 Synchonized **括号里的对象**；
 
 ###### 锁原理
 
 - synchronized：是通过**字节码指令**来实现的
   - synchronized 同步块：编译后会在**同步块前后形成 monitorenter 和 monitorexit 两个字节码指令**；
-    - 执行 monitorenter 指令时需要先获得对象的锁(每个对象有一个监视器锁monitor)，如果当前线程获得此锁（可重入锁），那么锁的计数器+1。如果获取失败，那么当前线程阻塞，直到锁被另一个线程释放，执行monitorexit指令时，计数器 -1，当为 0 的时候锁释放；
-    - 任意一个对象都拥有自己的监视器，当这个对象由同步块或者这个对象的同步方法调用时，执行方法的线程必须先获取到该对象的监视器才能进入同步块或者同步方法，而**没有获取到监视器（执行该方法）的线程将会被阻塞在同步块和同步方法的入口处，进入BLOCKED状态**；
-  - synchronize 同步方法：编译后会在方法访问处，添加字节码指令 ACC_SYNCHRONIZED  标志
-    - 不管是 monitorenter，还是ACC_SYNCHRONIZED本质都是对一个对象的监视器（monitor）进行获取，而这个获取是互斥锁；
+    - 执行 monitorenter 指令时，会尝试获取特定对象的监视器锁（每个对象有一个监视器锁monitor），如果当前线程获得此锁（可重入锁），那么锁的计数器+1。如果获取失败，那么当前线程阻塞，直到锁被另一个线程释放；
+    - 执行 monitorexit 指令时，计数器 -1，当为 0 的时候锁释放；
+    - 任意一个对象都拥有自己的监视器（对象锁），当这个对象由同步块或者这个对象的同步方法调用时，执行方法的线程必须先获取到该对象的监视器才能进入同步块或者同步方法，而**没有获取到监视器（执行该方法）的线程将会被阻塞在同步块和同步方法的入口处，进入BLOCKED状态**；
+  - synchronize 同步方法：编译后会在方法访问处，添加字节码指令 **ACC_SYNCHRONIZED**  标志
+    - 不管是 monitorenter，还是ACC_SYNCHRONIZED 本质都是对一个对象的监视器（monitor）进行获取；
 
 ###### synchronized：同步块
 
-​	要求多个线程对该块内的代码依次排队执行，前提条件是同步监视器对象，可以有效的**缩小同步范围**，并保证并发安全的同时尽可能的提高效率；
+​	要求多个线程对该块内的代码有序执行，前提条件是同步监视器对象，可以有效的**缩小同步范围**，并保证并发安全的同时尽可能的提高效率；
 
-- 当一个线程访问对象中的synchronized(this)同步代码块时，另一个线程仍然可以访问该对象中的非synchronized(this)同步代码块，因为非synchronized不需要monitor锁；
-- 当携带不同锁对象的线程执行同步块时，不会阻塞线程，因为是不同的monitor锁；
+- 当一个线程访问对象中的 synchronized(this) 同步代码块时，另一个线程仍然可以访问该对象中的非 synchronized(this) 同步代码块，因为非 synchronized 不需要 monitor 锁；
+- 当获取不同锁对象的线程执行同步块时，不会阻塞线程，因为是不同的 monitor 锁；
 
 ```java
-// this锁：指monitor对象
+// this锁：指 monitor对象
 synchronized (this) {
 	// todo
 }
@@ -53,14 +54,14 @@ synchronized (lock) {
 
 ###### synchronized：同步方法
 
-​	即：携带同一个锁对象的多个线程不能同时进入方法内部执行
+​	即：获取同一个锁对象的多个线程不能同时进入方法内部执行。
 
-- synchronized 同步方法：在一个线程调用该方法时，**该方法会从所属对象中获取锁**，其他携带同一个对象的线程在执行此方法时，由于执行此方法的线程没有释放锁，所以只能在方法外阻塞，直到持有同步锁的线程将方法执行完毕，释放锁，此线程获取同步锁；
-- **同一个锁对象可以产生互斥作用，不同锁对象不能产生互斥作用**
-- 若修饰静态方法：属于类的，具有同步效果，与对象无关
+- synchronized 同步方法：在一个线程调用该方法时，**该方法会从调用对象中获取锁**，其他携带同一个对象的线程将会被阻塞，直到持有同步锁的线程将方法执行完毕，释放锁，此线程获取同步锁；
+- **同一个锁对象可以产生互斥作用，不同锁对象不能产生互斥作用**；
+- 若修饰静态方法：属于类的，与对象无关
 
 ```java
-public synchronized void synchronizedMethod() {
+public synchronized void method() {
   // ...
 }
 public static synchronized void method() {
@@ -70,13 +71,13 @@ public static synchronized void method() {
 
 ###### 注意：
 
-1. 被 synchronized 修饰方法，不能被继承，若需要同步，在子类的重写该方法时需添加 synchronized 关键字；
+1. 被 synchronized 修饰方法，不能被继承，若需要同步，在子类重写该方法时需添加 synchronized 关键字；
 2. 在接口中定义方法时不能使用 synchronized 关键字；
 3. 构造方法不能使用 synchronized 关键字，但可以使用 synchronized 代码块来进行同步；
 
-###### synchronized 类锁：Class锁
+###### synchronized：类锁（Class锁）
 
-- synchronized 作用于一个类时，每个类有且只有一个Class对象，即类的 Class 对象锁，类的所有对象都是同一把锁，相当于static同步块。
+- synchronized 作用于一个类时，每个类有且只有一个 Class 对象，即类的 Class 对象锁，类的所有对象获取的都是同一把锁，相当于静态方法块。
 
 ```java
 synchronized (ClassName.class) {
@@ -88,23 +89,25 @@ synchronized (ClassName.class) {
 
 1. 对象头；
 2. 实例数据；
+   - 对象的实际数据，即字段的值；
+
 3. 对齐填充字节；
-   - JVM要求Java的对象占的内存大小应该是**8bit的倍数**，所以后面有几个字节用于把对象的大小补齐至8bit的倍数，没有特别的功能；
+   - 由于 JVM 要求对象起始地址必须是 8 字节的整数倍，因此可能需要几个填充来满足对齐要求。因为许多计算机体系结构**对于非对齐的内存访问会更慢**。
 
 ##### 03：Java 对象头
 
-- Hotspot 虚拟机的对象头主要包括两部分数据：
-  - Mark Word （标记字段）+  Class Metadata Address（类型指针）+ Array Length （数组长度）
-- **Mark word**：存储锁的信息，hashCode()值，对象分代年龄；
+- Hotspot 虚拟机的对象头主要包括两部分数据
+  - Mark Word （标记字）+  Class Metadata Address（类型指针）+ Array Length （数组长度）
+- **Mark Word**：存储锁的信息，hashCode() 值，对象分代年龄；
 - **Class Metadata Address**：存储到对象类型数据的指针，用于确定是哪个类的实例；
--  **Array Length**：如果当前对象是数组，则存储的是数据的长度；
+-  Array Length：如果当前对象是数组，则存储的是数据的长度；
 
-##### 04：Mark Word
+##### 04：Mark Word 标记字
 
 - 一个非固定的数据结构，它会根据对象的状态复用自己的存储空间；
-- 大小：一个字节
+- 大小：8 个字节，64 bit；
 
-![](https://github.com/likang315/Middleware/blob/master/%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E5%A4%9A%E7%BA%BF%E7%A8%8B/mark%20word.png?raw=true)
+![](https://github.com/likang315/Middleware/blob/master/01：多线程/photos/Mark-Word.png?raw=true)
 
 ##### 05：Monitor：监视器锁
 
