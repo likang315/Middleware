@@ -107,7 +107,7 @@ synchronized (ClassName.class) {
 - 一个非固定的数据结构，它会根据对象的状态复用自己的存储空间；
 - 大小：8 个字节，64 bit；
 
-![](https://github.com/likang315/Middleware/blob/master/01：多线程/photos/Mark-Word.png?raw=true)
+<img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/Mark-Word.png?raw=true" style="zoom:60%;" />
 
 ##### 05：Monitor：监视器锁
 
@@ -127,8 +127,8 @@ synchronized (ClassName.class) {
 - **锁只能升级但不能降级**，即偏向锁升级成轻量级锁后不能降级成偏向锁。这种策略目的是为了**提高获取锁和释放锁的效率；**
   - 无锁状态
   - 偏向锁状态
-  - 轻量级锁状态
-  - 重量级锁状态（自旋锁状态）
+  - 轻量级锁状态（自旋锁状态）
+  - 重量级锁状态
 
 ##### 07：重量级锁
 
