@@ -191,7 +191,7 @@ class Mutex implements Lock {
 
 - 在获取同步状态时，同步器维护一个同步队列，获取状态失败的线程**构造成一个Node节点**，通过CAS安全的加入到队列的**尾部并在队列中进行自旋**；
 - 当头节点的线程释放了同步状态之后，将会**唤醒其后继节点**，后继节点的线程被唤醒后需要检查自己的前驱节点是否是头节点，尝试**获取同步状态**，若获取成功后**将当前节点设置为头结点**；
-- <img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/独占式同步状态的获取与释放.png.png?raw=true" style="zoom:33%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/独占式同步状态的获取与释放.png?raw=true" style="zoom:33%;" />
 
 ###### 共享式同步状态获取与释放
 
