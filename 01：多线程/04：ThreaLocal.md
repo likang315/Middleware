@@ -8,7 +8,7 @@
 
 - 即**线程变量，**它提供了线程局部变量的机制。使用 ThreadLocal 可以**在每个线程中存储独立的变量副本，这些变量对于不同的线程是隔离的**。
 - 确保被其修饰的变量在多线程环境下访问时，能**保证各个线程里的变量相对独立于其他线程内的变量**。
-- **泛型中存储的是共享变量，ThreadLocalMap 的 Entry[ ] 中，key为当前线程的 Threadlocal 变量，value为当前线程的共享变量值。**
+- **泛型中存储的是共享变量，ThreadLocalMap 的 Entry[ ] 中，key 为当前线程的 Threadlocal 实例，value为当前线程的共享变量值。**
 - 锁一般是以时间换空间，而 ThreadLocal 是以空间换时间。
 - ThreadLocal 实例通常来说都是 private static 类型的，用于关联线程和线程的上下文。
 
@@ -21,20 +21,22 @@
 - T  get()
 - void`  `set(T value)
 - void remove()
-  - 需要在使用完变量后**手动调用 remove 方法清除当前线程的变量副本**，否则可能会导致内存泄漏；
+  - 需要在使用完变量后**调用 remove 方法清除当前线程的变量副本，否则 map 中 value 可能 一直存在会导致内存泄漏**；
 
 
 ##### 03：ThreadLocalMap【源码剖析】
 
-- ThreadLocal 的一个内部类，是一个定制的 Map，仅适用于维护线程本地值，**哈希表 Entry 使用了对键的弱引用**，有助于GC回收；
-- ThreadLocalMap是Thread类的一个字段，它用于存储线程本地变量。每个线程可以在自己的ThreadLocalMap中存储和访问其本地变量，这样可以保证线程本地变量的隔离性和独立性。
+- 是 ThreadLocal 的一个内部类，一个 Map，仅用于维护线程本地值，**哈希表 Entry 使用了对键的弱引用，弱引用有助于GC回收；
+- **ThreadLocalMap 是 Thread 类的一个字段，它用于存储线程本地变量**。每个线程可以在自己的ThreadLocalMap中存储和访问其本地变量，这样可以保证线程本地变量的隔离性和独立性。
 
 ###### 特性
 
-1. 通过 getMap() 获取**每个线程 Thread 持有自己的ThreadLocalMap实例**，因此它们是不存在并发竞争的，可以理解为每个线程有自己的变量副本；
+1. 通过 getMap() 获取**每个线程 Thread 持有自己的 ThreadLocalMap 实例**，因此它们是不存在并发竞争的，可以理解为每个线程有自己的变量副本；
 2. ThreadLocalMap 中 Entry[] 数组存储数据，初始化长度16，后续每次都是2倍扩容；
-3. Entry 的 key 是对 **当前线程 ThreadLocal 的弱引用**，当抛弃掉 ThreadLocal 对象时，垃圾收集器会忽略这个 key 的引用而清理掉 ThreadLocal 对象，**防止内存泄漏**；
-   - 如果 Threadlocal 在线程中还被**使用的时候他是一个强引用（new  ThreadLocal）**，而作为强引用的时候，他在ThreadLocalMap中的 key 这个弱引用就不会被GC收掉；
+3. Entry 的 key 是对 **当前线程的 ThreadLocal 的弱引用**，当抛弃掉 ThreadLocal 对象时，垃圾收集器会忽略这个 key 的弱引用而清理掉 ThreadLocal 对象，**防止内存泄漏**；
+   - 如果 Threadlocal 在线程中还被**使用时他是一个强引用（new  ThreadLocal）**，而作为强引用的时候，ThreadLocal 在 ThreadLocalMap 中作为键的弱引用不会被垃圾收集器回收掉。
+   - 使用时同时有两个引用指向 ThreadLocal，一个强引用，一个弱引用，当使用完时，只剩一个弱引用；
+   - **若使用完线程未被销毁，ThreadLocalMap 中的 key 被回收，但是 value 一直存在，导致内存泄漏，因此需要 remove()；**
 
 
 ```java
@@ -63,7 +65,7 @@ public class ThreadLocal<T> {
         // 获取当前线程自己的map
         ThreadLocalMap map = getMap(t);
         if (map != null) {
-            // this:当前线程的threadlocal对象
+            // this: 当前线程的threadlocal对象实例
             ThreadLocalMap.Entry e = map.getEntry(this);
             if (e != null) {
                 // 将线程的T返回，只有这个T是共享的
@@ -161,6 +163,7 @@ public static void main(String[] args) throws InterruptedException {
                     log.warn("got exception while parsing {}", dateString, e);
                 }
             }
+            // 若线程未被销毁，导致内存泄漏
             localDateFormat.remove();
         });
     }
