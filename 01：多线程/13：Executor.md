@@ -6,19 +6,19 @@
 
 ##### 01：概述
 
- 从 JDK 1.5 开始，Java把**工作单元**和**执行机制**分离开，任务提交和任务执行分离开。
+ 从 JDK 1.5 开始，Java 把**工作单元**和**执行机制**分离开，任务提交和任务执行分离开。
 
 - 工作单元：Runnable，Callable
 - 执行机制：Excutor 框架提供
 
 ##### 02：Executor 两级调度模型
 
-- 在上层，Java多线程程序通常把应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；
+- 在上层，Java 多线程程序通常把应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；
 - 在底层，操作系统内核将这些线程映射到硬件处理器上；
 
-##### 03：Executor 组成【三部分】
+##### 03：Executor 组成
 
-![](/Users/likang/Code/Git/Java-and-Middleware/多线程/多线程/executor使用示意图.png)
+![](https://github.com/likang315/Middleware/blob/master/01：多线程/photos/executor使用示意图.png?raw=true)
 
 1. 任务
 
@@ -42,7 +42,7 @@
 
 1. ThreadPoolExecutor
 2. ScheduledThreadPoolExecutor
-3. Future接口
+3. Future 接口
 4. Runnable接口、Callable接口
 5. Executors 
 
@@ -87,8 +87,6 @@
 
 ##### 05：ThreadPoolExecutor 详解
 
-线程池预热：初始化线程corePoolSize
-
 1. ###### FixedThreadPool
 
    ```java
@@ -101,7 +99,7 @@
 
    - 当线程池中的线程数大于corePoolSize时，keepAliveTime为多余的空闲线程等待新任务的最长时间，超过这个时间后多余的线程将被终止。这里把keepAliveTime设置为0L，意味着多余的空闲线程会被立即被终止；
    - FixedThreadPool使用无界队列LinkedBlockingQueue作为线程池的工作队列（容量：Integer.MAX_VALUE）
-   - 使用无界队列时maximumPoolSize，keepAliveTime，拒绝策略都是一个无效参数；
+   - 使用无界队列时 maximumPoolSize，keepAliveTime，拒绝策略都是一个无效参数；
 
 2. ###### SingleThreadExecutor
 
@@ -137,13 +135,14 @@
 
 ###### 原理
 
-- 定时任务先执行 corn，计算出任务的执行时间，放入延迟队列中，假如队列中有多个定时任务，按照延迟时间最小堆排序，把延迟是时间最小的放到队列的头部，有一个工作者线程轮询获取任务（持有时间器），判断delayTime 是否为0 ，若是执行，否则丢弃任务，继续等待；
+- 定时任务先执行 corn，**计算出任务的执行时间，放入延迟队列中**，假如队列中有多个定时任务，**按照延迟时间最小堆排序，把延迟是时间最小的放到队列的头部**，有一个工作者线程轮询获取任务（持有时间器），判断 delayTime 是否为0 ，若是执行，否则丢弃任务，继续等待；
+- @Scheduled 的定时任务执行机制；
 
 ##### 07：Future 接口
 
 1. ###### FutureTask  
 
-   - FutureTask的实现基于AbstractQueuedSynchronizer ；
+   - FutureTask 的实现基于AbstractQueuedSynchronizer ；
 
 ```java
 public class FutureTask<V> implements RunnableFuture<V> {
@@ -151,20 +150,20 @@ public class FutureTask<V> implements RunnableFuture<V> {
 }
 ```
 
-- get ( ) ：执行get方法时，若是处于未启动或者已启动状态时，将会导致**调用线程阻塞，等待获取线程结果；**
-- V get(long timeout, TimeUnit unit) ：最长等待timeout时间，否则抛出超时异常；
-- boolean isDone() ：判断task是否执行完成；
+- get ( ) ：执行 get 方法时，将会导致**调用线程阻塞，等待获取线程结果；**
+- V get(long timeout, TimeUnit unit) ：最长等待 timeout 时间，否则抛出超时异常；
+- boolean isDone() ：判断 task 是否执行完成；
 - cancel( )：取消正在执行任务的线程；
 
-![](https://github.com/likang315/Middleware/blob/master/%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E5%A4%9A%E7%BA%BF%E7%A8%8B/FutureTask.png?raw=true)
+<img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/FutureTask.png?raw=true" style="zoom:67%;" />
 
-- 可以把FutureTask交给Executor执行；
-- 也可以通过ExecutorService.submit（…）方法返回一个FutureTask，然后执行FutureTask.get()方法或FutureTask.cancel（…）方法；
+- 可以把 FutureTask 交给Executor执行；
+- 也可以通过 ExecutorService.submit（…）方法返回一个FutureTask，然后执行 FutureTask.get() 方法或FutureTask.cancel（…）方法；
 
 ##### 08：CompletableFuture
 
 - Future 对于结果的获取却是很不方便，只能通过阻塞或者轮询的方式得到任务的结果，**阻塞的方式显然和我们的异步编程的初衷相违背，轮询的方式又会耗费无谓的 CPU 资源**，而且也不能及时地得到计算结果;
-- CompletableFuture提供了非常强大的Future的扩展功能，并且提供了**函数式编程**的能力，可以通过回调的方式处理计算结果，也提供了转换和组合 CompletableFuture 的方法；
+- CompletableFuture 提供了非常强大的Future的扩展功能，并且提供了**函数式编程**的能力，可以通过回调的方式处理计算结果，也提供了转换和组合 CompletableFuture 的方法；
 - 它可能代表一个明确完成的Future，也有可能代表一个完成阶段（ CompletionStage ），它支持在计算完成以后触发一些函数或执行某些动作；
 
 ```java
@@ -172,7 +171,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T>
 ```
 
 - getNow(T valueIfAbsent) ：如果结果已经计算完则返回结果或者抛出异常，否则返回 valueIfAbsent 值
-- join()：阻塞等待线程执行完成后，返回计算的结果或者抛出一个unchecked异常(CompletionException)
+- join()：阻塞当前线程，等待被调用线程执行完成后，返回计算的结果或者抛出一个unchecked异常(CompletionException)
 
 ###### 创建、获取CompletableFuture对象
 
@@ -277,9 +276,9 @@ CompletableFuture<String> f = future.handleAsync((v, e) -> {
 ###### 用来组合多个CompletableFuture
 
 ```java
-// 当所有的CompletableFuture都执行完后执行计算
+// 阻塞，直到所有的CompletableFuture都执行完
 public static CompletableFuture<Void> allOf(CompletableFuture<?>... cfs)
-// 当任意一个CompletableFuture执行完后就会执行计算，计算的结果相同
+// 阻塞，直到任意一个CompletableFuture执行完后就会执行
 public static CompletableFuture<Object> anyOf(CompletableFuture<?>... cfs)
 ```
 
@@ -325,9 +324,9 @@ public static <T> CompletableFuture<Stream<T>> sequence(
 }
 ```
 
-###### 超时设置 【Java 9】
+###### 超时设置（Java 9）
 
-- `orTimeout(long timeout, TimeUnit unit)`：如果该 `CompletableFuture` 在指定的时间内没有完成，则将其完成异常（`CompletionException`）。
+- `orTimeout(long timeout, TimeUnit unit)`：如果该 `CompletableFuture` 在指定的时间内没有完成，则将抛出 TimeoutException 异常。
 
 - `completeOnTimeout(T value, long timeout, TimeUnit unit)`：如果该 `CompletableFuture` 在指定的时间内没有完成，则将其指定的值返回。
 
@@ -337,18 +336,8 @@ public static <T> CompletableFuture<Stream<T>> sequence(
   future.completeOnTimeout("指定值：操作超时", 1, TimeUnit.SECONDS);
   ```
 
-###### 延迟队列线程池
+###### 取消执行
 
-- delayedExecutor(long delay, TimeUnit unit,  Executor executor)
-
-- 基于内存的，容易丢失，一般用 Redis ZSet
-
-- ```java
-  Executor executor = CompletableFuture.delayedExecutor(1, TimeUnit.SECONDS,
-                                                        ForkJoinPool.commonPool()); 
-  CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-      // todo...
-  }, executor);
-  ```
-
-  
+- cancel(boolean mayInterruptIfRunning)
+  - mayInterruptIfRunning 为 `true`时如果任务正在运行，那么任务的执行线程会**被中断以停止任务的执行**；
+  -  mayInterruptIfRunning 为 `false`时，如果任务当前正在运行，它**不会被中断且允许任务继续执行直至完成**。
