@@ -6,26 +6,32 @@
 
 ##### 01：线程池
 
-- 降低资源消耗，**提高响应速度**，提高线程可管理性；
-- **重复利用已经创建的线程，减少创建线程和销毁线程的开销**，不需要等到线程创建就能立即执行；
-- 使用线程池可以对线程**统一分配，调优和监控**；
-- 当我们的应用需要创建大量线程或者发现线程会频繁的创建和销毁时就应当考虑使用线程池来维护线程；
+- **重复利用已经创建的线程，减少创建线程和销毁线程的开销**，提高响应速度；
+- 使用线程池可以对线程**统一分配，调优和监控管理**，提高线程可管理性；
+- 当我们的应用需要创建大量线程或者发现线程会**频繁的创建和销毁时就应当考虑使用线程池来维护线程**；
 
 ##### 02：线程池原理
 
-![](https://github.com/likang315/Middleware/blob/master/%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E7%BA%BF%E7%A8%8B%E6%B1%A0.png?raw=true)
+<img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/线程池.png?raw=true" style="zoom:50%;" />
 
 1. 向线程池提交任务后，处理任务流程;
-2. 判断核心线程池（corePoolSize：核心线程数）是否都处于工作状态，若没有，则拿一个已有的线程执行任务，若是，则进入下一个流程；
+2. 判断核心线程池（corePoolSize：核心线程数）是否都处于工作状态，若没有，则取一个已有的线程执行任务，若是，则进入下一个流程；
 3. 查看阻塞队列（BlockingQueue）是否已满，未满的话，将任务存储在队列里，若满的话，进入下一个流程；
 4. 查看线程池（maximumPoolSize：最大线程数量）中的线程数量是否达到最大线程数，若没有，创建线程执行任务，若线程池满了，则按照某种拒绝策略（handler）处理无法执行的任务；
 
 ##### 03：ThreadPoolExcutor
 
-- ThreadPoolExcutor 执行excute( ) 示意图
-- 在步骤一、三创建线程都会要求**获取全局锁**，要尽可能的避免获取全局锁
+- ThreadPoolExcutor 执行 excute( ) 示意图
+- 在步骤一、三创建线程都会要求**获取全局锁**，要尽可能的避免获取全局锁；
 
-![](https://github.com/likang315/Middleware/blob/master/%E5%A4%9A%E7%BA%BF%E7%A8%8B/%E5%A4%9A%E7%BA%BF%E7%A8%8B/ThreadPoolExcutor.png?raw=true)
+  - ```java
+    // 全局锁，更新线程池状态时确保线程安全性，防止多个线程同时修改，导致数据竞不一致
+    private final ReentrantLock mainLock = new ReentrantLock();
+    ```
+
+    
+
+<img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/ThreadPoolExcutor.png?raw=true" style="zoom:65%;" />
 
 ##### 04：创建线程池的参数
 
@@ -41,72 +47,72 @@
                             RejectedExecutionHandler handler)
   ```
 
-- ###### corePoolSize
+###### corePoolSize
 
-  - 核心线程池的大小
-  - 构建线程池后，并不会立即创建线程，当执行任务时，如果当前线程数如果小于corePoolSize，则创建一个线程，当前线程数等于corePoolSize，会将任务放入队列中；
+- 核心线程池的大小
+- 构建线程池后，并不会立即创建线程，当执行任务时，如果当前线程数如果小于corePoolSize，则创建一个线程，当前线程数等于corePoolSize，会将任务放入队列中；
 
-- ###### workQueue：阻塞队列（4种，属于阻塞队列）
+###### workQueue
 
-  - ArrayBlockingQueue：
-    -  基于数组结构的有界阻塞队列，按FIFO排序任务
-  - LinkedBlockingQuene：
-    - 基于链表结构的有界阻塞队列，按FIFO排序任务，**吞吐量高于ArrayBlockingQuene**；
-    - ExecutorService newFixedThreadPool( ) 使用此队列
-      - Executors.newFixedThreadpool（固定线程数）:禁用 
-    - ThreadPoolTaskExecutor 默认也是此队列；
-      - LinkedBlockingQueue时有一个大小限制，其默认为Integer.MAX_VALUE；
-      - LinkedBlockingQueue不接受null值，当添加null的时候，会直接抛出NullPointerException；
-  - SynchronousQuene：
-    - 没有容量的阻塞队列，每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于LinkedBlockingQuene
-    - ExecutorService newCachedThreadPool( )  使用此队列
-  - priorityBlockingQuene：
-    - 具有优先级的无界阻塞队列
+- ArrayBlockingQueue：
+  -  基于数组结构的有界阻塞队列，按FIFO排序任务
+- LinkedBlockingQuene：
+  - 基于链表结构的有界阻塞队列，按FIFO排序任务，**吞吐量高于ArrayBlockingQuene**；
+  - ExecutorService newFixedThreadPool( ) 使用此队列
+    - Executors.newFixedThreadpool（固定线程数）:禁用 
+  - ThreadPoolTaskExecutor 默认也是此队列；
+    - LinkedBlockingQueue时有一个大小限制，其默认为Integer.MAX_VALUE；
+    - LinkedBlockingQueue不接受null值，当添加null的时候，会直接抛出NullPointerException；
+- SynchronousQuene：
+  - 没有容量的阻塞队列，每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于LinkedBlockingQuene
+  - ExecutorService newCachedThreadPool( )  使用此队列
+- priorityBlockingQuene：
+  - 具有优先级的无界阻塞队列
 
-- ###### maximumPoolSize：
+###### maximumPoolSize
 
-  - 线程池最大数量
-  - 如果任务队列已满时，并且创建的线程数小于最大线程数，则会创建线程执行任务；
-  - 若使用无界队列则此参数没有意义
+- 线程池最大数量
+- 如果任务队列已满时，并且创建的线程数小于最大线程数，则会创建线程执行任务；
+- 若使用无界队列则此参数没有意义
 
-- ###### keepAliveTime：
+###### keepAliveTime
 
-  - 线程存活时间，工作线程空闲后，保持存活的时间；
-  - 默认情况下，如果当前线程数大于corePoolSize，并且存在线程如果没有任务执行，当空闲的时间大于keepAliveTime时，会终止该线程，直到线程数不超过corePoolSize；
+- 线程存活时间，工作线程空闲后，保持存活的时间；
+- 默认情况下，如果当前线程数大于 corePoolSize，并且存在线程如果没有任务执行，当空闲的时间大于 keepAliveTime时，会终止该线程，直到线程数不超过 corePoolSize；
 
-- ###### TimeUnit：
+###### TimeUnit
 
-  - 线程活动保持时间的单位
-  - 毫秒：MILLISECONDS
-  - 微妙：MICROSECONDS
-  - 纳秒：NANOSECONDS
+- 线程活动保持时间的单位
+- 毫秒：MILLISECONDS
+- 微妙：MICROSECONDS
+- 纳秒：NANOSECONDS
 
-- ###### rejectedExecutionHandler：拒绝策略（4种，类）
+###### rejectedExecutionHandler：拒绝策略（4种）
 
-  - AbortPolicy：直接抛出异常，默认策略；
-  - CallerRunsPolicy：只用调用者所在的线程来执行任务；
-  - DiscardOldestPolicy：丢弃阻塞队列中靠最前的任务，并执行当前任务；
-  - DiscardPolicy：不处理，丢弃掉；
-  
-- ###### ThreadFactory：
+- **AbortPolicy**：直接抛出异常，默认策略；
+- CallerRunsPolicy：用调用者所在的线程来执行任务；
+- DiscardOldestPolicy：丢弃阻塞队列中靠最前的任务，并执行当前任务；
+- DiscardPolicy：不处理，丢弃掉；
 
-  - 用于设置创建线程的工厂，通过线程工厂可以使创建的线程具有意义的名字；
+###### ThreadFactory
 
-  ```java
+- 用于设置创建线程的工厂，通过线程工厂可以统一管理创建的线程名字；
+
+- ```java
   new BasicThreadFactory.Builder().namingPattern(ip + "-" + threadName + "-%d").build()
   ```
 
-##### 05：操作线程池
+##### 05：线程池 API
 
-- execute( )：
-  - 用于提交**不需要返回值**的任务，所以无法判断是否被线程池执行成功
+- execute( )
+  - 用于提交**不需要返回值**的任务，所以无法判断是否被线程池执行成功；
   - 输入的任务一个 Runnable 的实例
   
-- submit( ):
-  - 提交**需要有返回值**的任务，线程池会返回一个 Future 对象，通过Future 可以知道线程是否执行成功
-  - Future 的get( ) 方法：阻塞当前线程直到任务完成
+- submit( )
+  - 提交**需要有返回值**的任务，线程池会返回一个 Future 对象，通过 Future 可以知道线程是否执行成功；
+  - Future 的 get( ) 方法：阻塞当前线程直到任务完成
     
-    - get（long timeOut，TimeUnit unit）：阻塞timeout时间，返回，任务可能为执行完成，但是超时了；
+    - get(long timeOut，TimeUnit unit）：阻塞 timeout 时间返回，任务可能未执行完成，超时了；
     
     - ```java
       Future<Object> future = excutor.submit(task);
@@ -122,25 +128,33 @@
       }
       ```
   
-- **shutdown( )：**
+- **shutdown( )**
   
-  - 将线程池的状态设置为SHUTDOW，然后遍历工作线程，调用interupt（），**中断没有正在执行任务的线程，若有现成正在执行任务，等待任务执行完毕**；
+  - 将线程池的状态设置为 SHUTDOWN，然后遍历工作线程，调用 interupt（），**中断没有正在执行任务的线程，若有现成正在执行任务，等待任务执行完毕**；
   
-- **shutdownNow( )：**
+- **shutdownNow( )**
   
-  - 将线程池的状态设置为STOP，**中断所有工作线程**，不区分是否正在执行任务
+  - 将线程池的状态设置为STOP，不管是否正在执行任务，**中断所有工作线程**；
   
 - boolean **awaitTermination**(long timeout, TimeUnit unit)
 
-  - 阻塞等待timeout时间，判断线程池是否 TERMINATED 状态;
+  - 阻塞等待 timeout 时间，判断线程池是否 TERMINATED 状态;
 
-- isShutdown( )：
+- isShutdown( )
   
-  - 只要调用关闭方法中任意一个就会返回ture，当所有任务执行完成后，才表示线程池关闭成功
+  - 只要调用关闭方法中任意一个就会返回ture，当所有任务执行完成后，才表示线程池关闭成功；
   
-- **isTerminaed( ):**
+- **isTerminaed( )**
   
-  - 线程池关闭成功，才会返回True
+  - 线程池关闭成功，才会返回True；
+
+##### 06：线程池的状态
+
+1. **RUNNING**：线程池处于正常运行状态，接受新任务并处理排队的任务。
+2. **SHUTDOWN**：调用 `shutdown()` 方法后转变为 SHUTDOWN，不再接受新任务，但会处理完队列中已有的任务。
+3. **STOP**：调用 `shutdownNow()` 方法后转变为 STOP 状态，不再接受新任务，也不处理队列中剩余的任务，并会尝试中断正在执行的任务。
+   -  TIDYING 一种中间状态，表示线程池**正在进行一些清理工作**，等待所有线程执行完毕以便转换为 TERMINATED 状态。
+4. **TERMINATED**：线程池已经结束，不再处理任何任务。
 
 ##### 07：合理的配置线程池
 
@@ -152,16 +166,16 @@
 ##### 08：线程池的监控
 
 - 必需对线程池进行监控，方便在出现问题时，可以根据线程池的使用状况快速定位问题。可以通过线程池提供的参数进行监控；
-- taskCount：线程池需要执行的任务数量。
+- taskCount：线程池需要执行的任务数量；
 - completedTaskCount：线程池在运行过程中**已完成的任务数量**，小于或等于taskCount；
 - **largestPoolSize**：线程池里曾经创建过的最大线程数量。通过这个数据**可以知道线程池是否曾经满过**；
-- getPoolSize：线程池的线程数量。如果线程池不销毁的话，线程池里的线程不会自动销毁；
+- getPoolSize：线程池的线程数量；
 
-##### 09：如何优雅的关闭线程池
+##### 09：优雅的关闭线程池
 
-- **钩子函数**：父类定义的空实现的方法，子类通过实现这些方法，在程序运行的声明周期中的某个阶段来回调这些方法，实现我们自定义的功能（操作系统的概念）。
+- **钩子函数（Hook functions）**：是一种编程机制，通常**用于在特定事件发生时执行自定义代码**；
 
-- java.lang.Shutdown：控制JVM正常关闭的类；
+- java.lang.Shutdown：控制 JVM 正常关闭的类；
 
   - 最多只能注册10 个钩子；
 
@@ -170,42 +184,37 @@
   @PostConstruct
   private void addHook() {
       Runtime.getRuntime().addShutdownHook(new Thread(this::closeRegisterThreadPool));
-  
   }
   private void closeRegisterThreadPool() {
       ThreadPoolMonitor.BUSINESS_THREAD_POOL.forEachEntry(1,
-          entry -> close(entry.getKey(), entry.getValue()));
+                            entry -> close(entry.getKey(), entry.getValue()));
   }
-  	/**
-       * 优雅的关闭线程池
-       * 注意：关闭线程过程中，该线程可能被中断
-       *
-       * @param threadName
-       * @param pool
-       */
+  // 优雅的关闭线程池，关闭线程过程中，该线程可能被中断
   private void close(String threadName, ExecutorService pool) {
-      log.info("CustomThreadPool_close: start to shutdown the theadPool: {}", threadName);
+      log.info("start to shutdown the theadPool: {}", threadName);
       pool.shutdown();
       try {
           if (!pool.awaitTermination(NumberConstants.ONE, TimeUnit.SECONDS)) {
-              log.warn("CustomThreadPool_close: interrupt the worker for {}, which may cause some task inconsistent!", threadName);
+              log.warn("interrupt the worker for {}, which may cause some task inconsistent!",
+                       threadName);
               pool.shutdownNow();
               if (!pool.awaitTermination(NumberConstants.FIFTY, TimeUnit.SECONDS)) {
-                  log.error("CustomThreadPool_close: {} pool can't be shutdown even with interrupting worker threads," +
+                  log.error("{} pool can't be shutdown even with interrupting worker threads," +
                             " which may cause some task inconsistent", threadName);
               }
           }
       } catch (InterruptedException ie) {
           pool.shutdownNow();
-          log.error("CustomThreadPool_close: the current server thread is interrupted" + " when it is trying to stop the worker threads of {}", pool);
+          log.error("the current thread is interrupted" +
+                    "when it is trying to stop the worker threads of {}", pool);
           // 保留中断位
           Thread.currentThread().interrupt();
       }
-      log.info("CustomThreadPool_close: the threadPool of {} is successful closed!!!", threadName);
+      log.info("the threadPool of {} is successful closed!!!", threadName);
   }
   ```
 
-##### 10：ThreadPoolExecutor
+##### 10：源码剖析 ThreadPoolExecutor 
 
 ```java
 public class ThreadPoolExecutor extends AbstractExecutorService {
