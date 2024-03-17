@@ -20,8 +20,8 @@
    - redis 服务默认的端口是6379 ，可以通过检测端口是否是redis进程占用
 
 4. **检测redis服务是否启动**；
-- redis-cli ping ：检测redis服务是否启动，若返回PONG，则运行中；
-4.  **连接redis数据库**；
+- redis-cli ping ：检测 redis 服务是否启动，若返回PONG，则运行中；
+4.  **连接 redis 数据库**；
 - 本地需要另启一个 cmd 窗口，原来的不要关闭，不然就无法访问服务端了，切换到 redis 目录下运行: 
   
 - redis-cli -h 127.0.0.1 -p 6379  -a password
@@ -62,7 +62,7 @@ Redis 的配置文件CINFIU位于 Redis 安装目录下，**文件名为 redis.c
   - key 存在时**删除  key**;
   - 如果键被删除成功，命令执行后输出 (integer) 1，否则将输出 (integer) 0
 - **FLUSHALL**：
-  - 删除所有的的所有key；
+  - 删除所有库所有key；
 - DUMP key：
   - 用于序列化给定 key ，并返回被序列化的值，如果 key 不存在，那么返回 nil 
   - 便于传输；
@@ -74,7 +74,7 @@ Redis 的配置文件CINFIU位于 Redis 安装目录下，**文件名为 redis.c
 - **KEYS pattern**
   - 查找所有符合给定模式 pattern 的 key，正则；
 - MOVE key db
-  - 命令用于将当前数据库的 key 移动到给定的数据库 db 当中， redis默认使用数据库 0
+  - 命令用于将当前数据库的 key 移动到给定的数据库 db 当中， **redis 默认使用数据库 0**
 - PERSIST key
   - 用于移除给定 key 的过期时间，使得 key 永不过期
 - **TTL key**
@@ -91,7 +91,7 @@ Redis 的配置文件CINFIU位于 Redis 安装目录下，**文件名为 redis.c
 
 ##### 05：Redis 服务器
 
-- **INFO ：获取 Redis 服务器的各种信息和统计数值**
+- **INFO：获取 Redis 服务器的各种信息和统计数值**
   - redis_version : Redis 服务器版本；
   - os : Redis 服务器的宿主操作系统；
   - **clients : 已连接客户端信息**，包含以下域：
@@ -104,7 +104,7 @@ Redis 的配置文件CINFIU位于 Redis 安装目录下，**文件名为 redis.c
     - used_memory_rss：向操作系统申请的内存大小；
     - used_memory_peak：redis的内存消耗峰值(以字节为单位)；
   - Keyspace：数据库相关的统计信息
-- CLIENT LIST：返回所有连接到服务器的客户端信息和统计数据
+- **CLIENT LIST**：返回所有连接到服务器的客户端信息和统计数据
   - addr ： 客户端的地址和端口
   - fd ： 套接字所使用的文件描述符
   - age ： 以秒计算的已连接时长
@@ -121,6 +121,15 @@ Redis 的配置文件CINFIU位于 Redis 安装目录下，**文件名为 redis.c
   - omem ： 输出缓冲区和输出列表占用的内存总量
   - events ： 文件描述符事件
   - cmd ： 最近一次执行的命令
+- CLUSTER INFO：获取有关Redis Cluster的信息
+  - cluster_state：集群的状态，可能的取值有：ok、fail等；
+  - cluster_slots_assigned：已分配的槽数量；
+  - cluster_known_nodes：已知节点数量（主从）；
+  - cluster_size：集群规模（主节点数量）；
+  - cluster_current_epoch：集群当前纪元；
+- **CLUSTER NODES：返回 Redis 集群中所有节点的信息**
+  - 每行包含有关单个节点的详细信息，字段之间用空格分隔。
+
 - **DBSIZE：返回当前数据库的 key 的数量**
 - **FLUSHDB：删除当前数据库的所有key**
 - FLUSHALL ：删除整个redis中(所有数据库)所有的key
