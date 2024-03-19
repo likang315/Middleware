@@ -1,4 +1,4 @@
-### Redis Client
+### Redis Client
 
 ------
 
@@ -152,7 +152,6 @@ typedef struct redisClient {
 
 - 服务器会在**初始化时创建负责执行 Lua 脚本中包含的Redis 命令的伪客户端**，并将这个伪客户端关联在服务器状态结构的 lua_client 属性中。
 - lua_client 伪客户端**在服务器运行的整个生命期中会一直存在**，只有服务器被关闭时，该客户端才会关闭。
-
 
 
 
