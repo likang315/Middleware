@@ -24,7 +24,7 @@
 - 每个Redis 客户端都有自己的目标数据库， 每当客户端执行数据库命令的时候， 目标数据库就会成为这些命令的操作对象。
 - 默认情况下， **Redis 客户端的目标数据库为 0 号数据库**， 但客户端可以通过执行 SELECT 命令来切换目标数据库。
 - 在服务器内部， **客户端状态 redisClient 结构的 db 属性记录了客户端当前的目标数据库**， 这个属性是一个指向 redisDb 结构的指针，db 指针指向redis Server.db 数组的其中一个元素， 而被指向的元素就是客户端的目标数据库。
-- <img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/redis-database.png?raw=true" style="zoom:40%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/redis-database.png?raw=true" style="zoom:40%;" />
 
 ##### 03：数据库键空间
 
@@ -42,7 +42,7 @@
 
 ###### redis-db 空间分布
 
-<img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/redis-db-space.png?raw=true" style="zoom:30%;" />
+<img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/redis-db-space.png?raw=true" style="zoom:30%;" />
 
 - 实际上就是一个字典，对 redis 的操作，就是对字典的增删改查；
 

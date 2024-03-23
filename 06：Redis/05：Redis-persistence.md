@@ -113,7 +113,7 @@
 
 ##### 07：RDB 文件结构
 
-- <img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/rdb_struct.png?raw=true" style="zoom:35%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/rdb_struct.png?raw=true" style="zoom:35%;" />
 
 1. **redis：**RDB 文件的最开头是 REDIS 部分，这个部分的长度为 5 字节，保存着"REDIS" 五个字符。通过这五个字符,程序可以在载文件时， 快速检查所载入的文件是否RDB 文件。
 2. **db_version：** 长度为4字节，它的值是一个字符串表示的整数，这个整数记录了RDB文件的版本号；

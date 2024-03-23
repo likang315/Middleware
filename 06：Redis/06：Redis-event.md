@@ -27,7 +27,7 @@
 - 文件事件是对套接字操作的抽象，每**当一个套接字准备好执行连接应答(accept )、写人、读取、关闭等操作时**，就会产生一个文件事件。因为一个服务器通常会连接多个套接字， 所以多个文件事件有可能会并发地出现。
 - I/0 多路复用技术：负责**监听多个套接字**，并向文件事件分发器**传送产生了事件的套接字**。尽管多个文件事件可能会并发地出现， 但I/0 多路复用程序总是会将所有产生事件的套接字**都放到一个队列里**面， 然后通过这个队列， 以有序( sequentially ) 、同步(synchronously)、每次一个套接字的方式向文件事件分发器传送套接字。当上一个套接字产生的事件被处理完毕之后（ 该套接字为事件**所关联的事件处理器执行完毕**）， I/0 多路复用程序才会继续向文件事件分派器传送下一个套接字；
 
-<img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/event_io.png?raw=true" alt="event_io" style="zoom:90%;" />
+<img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/event_io.png?raw=true" alt="event_io" style="zoom:90%;" />
 
 ###### I0 多路复用程序的实现
 

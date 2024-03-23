@@ -112,7 +112,7 @@
 - **集合对象的编码可以是 `intset` 或者 `hashtable` 。**
 - `intset` 编码的集合对象使用整数集合作为底层实现， 集合对象包含的所有元素都被保存在整数集合里面。 
 -  `hashtable` 编码的集合对象使用字典作为底层实现， **字典的每个键都是一个字符串对象， 每个字符串对象包含了一个集合元素， 而字典的值则全部被设置为 `NULL`** 
-- <img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/intset_set_obj.png?raw=true" style="zoom:60%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/intset_set_obj.png?raw=true" style="zoom:60%;" />
 
 ###### 编码的转换
 
@@ -143,7 +143,7 @@
 
 - 字典保证根据元素查询分值复杂度：O(1)，跳表保证有序遍历复杂度： O(log n) ；
 
-<img src="https://github.com/likang315/Middleware/blob/master/06%EF%BC%9ARedis/photos/zset.png?raw=true" style="zoom:60%;" />
+<img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/zset.png?raw=true" style="zoom:60%;" />
 
 ###### 编码的转换
 
