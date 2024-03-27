@@ -39,14 +39,7 @@ Flowable<Boolean result = longObject.compareAndSet(3, 401);
 
 ##### 03：分布式锁
 
-- Rlock 分布式锁接口：
-- 分布式锁两个问题：
-  1. 分布式锁加锁+设置过期时间，两步，第一步刚成功宕机了，造成死锁；
-     - SETNX EX  命令解决；
-  2. 获得锁执行任务，任务未执行完，锁到期释放了，造成多个线程获得锁；
-- Watchdog（看门狗）：
-  - 自动延期：加锁时，若未设置过期时间，自动延期30s；
-  - Config.lockWatchdogTimeout：30s；
+- Rlock 分布式锁接口；
 
 ###### 示例
 
