@@ -144,6 +144,8 @@ bloomFilter.contains("1");
 
 - 用于在分布式环境下现在请求方的调用频率。既适用于不同Redisson实例下的多线程限流，也适用于相同Redisson实例下的多线程限流。该算法不保证公平性。
 
+- 限流算法：令牌桶算法
+
 - ```java
   // 限流器名称
   RRateLimiter rateLimiter = redisson.getRateLimiter("global_reteLimiter_name");
