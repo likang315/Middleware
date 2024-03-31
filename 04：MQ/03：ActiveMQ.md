@@ -6,7 +6,7 @@
 
 ##### 01：WEB 管理界面介绍
 
-<img src="https://github.com/likang315/Middleware/blob/master/04：MQ/photos/WEB%E9%9D%A2%E6%9D%BF%E4%BB%8B%E7%BB%8D.png?raw=true" style="zoom:30%;" />
+<img src="https://github.com/likang315/Middleware/blob/master/04：MQ/photos/WEB面板介绍.png?raw=true" style="zoom:30%;" />
 
 - ActiveMQ 是 Apache 自己编写的MQ，不过性能较差；
 - Name：消息队列名称；
