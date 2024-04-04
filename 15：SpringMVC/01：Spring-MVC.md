@@ -6,29 +6,32 @@
 
 ##### 01：概述
 
-![](https://github.com/likang315/Middleware/blob/master/14%EF%BC%9ASpringMVC/photos/Spring%20MVC.png?raw=true)
+![](https://github.com/likang315/Middleware/blob/master/15：SpringMVC/photos/Spring-MVC.png?raw=true)
 
-- MVC 框架提供了**模型-视图-控制**的体系结构和可以用来灵活开发、松散耦合的 **web 应用程序的组件**。MVC 模式导致了应用程序的不同方面**(输入逻辑、业务逻辑和 UI 逻辑)**的分离；
+- MVC（Model-View-Controller）模式提供了一种软件架构模式，用于将应用程序的逻辑层、表示层和控制层分离。提高代码的可维护性和可扩展性。
+  1. **模型（Model）：**负责应用程序的业务逻辑和数据处理；
+  2. **视图（View）：**负责用户界面的呈现；
+  3. **控制器（Controller）：**负责处理用户输入并相应地更新模型和视图。
+
 - Spring（父）、Spring MVC（子） 是两个管理对象的容器，并且是**父子容器**；
-- Spring MVC用于构建WEB应用，管理web组件的 bean；
-- Spring 用于管理dao层、service层Bean；
+- Spring MVC 用于构建 WEB  应用，管理 web 组件的 Bean。Spring 用于管理 dao & service 层 Bean；
 
 ##### 02：MVC Request 流程【重要】
 
 1. **前端控制器：**请求先访问Spring的 DispatcherServlet (前端控制器)
    - Spring MVC 所有的请求都会通过一个前端控制器（front controller），是常用的 Web 应用程序模式，**一个单实例的Servlet** 将请求委托给WEB应用程序的其他组件来执行实际的处理;
-   
+
 2. **处理映射：**DispatcherServlet 将请求转发给 Spring MVC 控制器（controller）
    - 控制器是一个用于处理请求的 Spring 组件，DispatcherServlet 需要知道应该将请求发送给哪个控制器，所以 DispatcherServlet会查询一个或多个**处理器映射（handler mapping）**来确定请求的下一站在哪，处理器映射会**根据请求所携带的 URL 信息**来进行决策，Map的key；
-   
+
 3. **控制器处理：**选择合适的控制器后，DispatcherServlet 会将请求发送给选中的控制器；
    - 到了控制器，请求会卸下其负载（用户提交的信息）并等待控制器处理这些信息，将处理的结果封装成Model ，通常由POJO组成；
-   
+
 4. **模型和视图：**控制器将模型和视图名返回给前端控制器：
    - 控制器会将请求连同模型数据和用于渲染的视图名发送回 DispatcherServlet，DispatcherServlet 将根据视图名选择相应的视图解析器（ ViewResolver）；
-   
+
 5. **视图解析器**：渲染数据；
-- 将它交付的模型数据，使用**视图解析器将模型数据渲染输出**，然后通过响应对象传递给客户端；
+   - 将它交付的模型数据，使用**视图解析器将模型数据渲染输出**，然后通过响应对象传递给客户端；
 
 ##### 03：配置示例
 
