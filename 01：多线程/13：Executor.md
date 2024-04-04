@@ -128,17 +128,7 @@
    2. 当初始maximumPool为空，或者maximumPool中当前没有空闲线程时，将没有线程执行SynchronousQueue.poll（keepAliveTime，TimeUnit.NANOSECONDS）。这种情况下，步骤1将失败；此时CachedThreadPool会创建一个新线程执行任务，execute()方法执行完成；
    3. 在步骤2中新创建的线程将任务执行完后，会执行SynchronousQueue.poll（keepAliveTime，TimeUnit.NANOSECONDS）。这个poll操作会让空闲线程最多在SynchronousQueue中等待60秒钟。如果60秒钟内主线程提交了一个新任务（主线程执行步骤1）），那么这个空闲线程将执行主线程提交的新任务；否则，这个空闲线程将终止。由于空闲60秒的空闲线程会被终止，因此长时间保持空闲的CachedThreadPool 不会使用任何资源；
 
-##### 06：ScheduledThreadPoolExecutor 详解
-
-1. 当调用ScheduledThreadPoolExecutor的scheduleAtFixedRate()方法或者scheduleWithFixedDelay()方法时，会向ScheduledThreadPoolExecutor的DelayQueue添加一个实现了RunnableScheduledFuture接口的ScheduledFutureTask；
-2. 线程池中的线程从**DelayQueue**中获取ScheduledFutureTask，然后执行任务；
-
-###### 原理
-
-- 定时任务先执行 corn，**计算出任务的执行时间，放入延迟队列中**，假如队列中有多个定时任务，**按照延迟时间最小堆排序，把延迟是时间最小的放到队列的头部**，有一个工作者线程轮询获取任务（持有时间器），判断 delayTime 是否为0 ，若是执行，否则丢弃任务，继续等待；
-- @Scheduled 的定时任务执行机制；
-
-##### 07：Future 接口
+##### 06：Future 接口
 
 1. ###### FutureTask  
 
@@ -160,7 +150,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
 - 可以把 FutureTask 交给Executor执行；
 - 也可以通过 ExecutorService.submit（…）方法返回一个FutureTask，然后执行 FutureTask.get() 方法或FutureTask.cancel（…）方法；
 
-##### 08：CompletableFuture
+##### 0：CompletableFuture
 
 - Future 对于结果的获取却是很不方便，只能通过阻塞或者轮询的方式得到任务的结果，**阻塞的方式显然和我们的异步编程的初衷相违背，轮询的方式又会耗费无谓的 CPU 资源**，而且也不能及时地得到计算结果;
 - CompletableFuture 提供了非常强大的Future的扩展功能，并且提供了**函数式编程**的能力，可以通过回调的方式处理计算结果，也提供了转换和组合 CompletableFuture 的方法；

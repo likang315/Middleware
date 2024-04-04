@@ -12,7 +12,7 @@
 
 ##### 02：集群控制器（Controller）
 
-<img src="/Users/likang/Code/Git/Middleware/04：MQ/photos/kafka-zk.png" alt="kafka-zk" style="zoom:30%;" />
+<img src="https://github.com/likang315/Middleware/blob/master/04：MQ/photos/kafka-zk.png?raw=true" alt="kafka-zk" style="zoom:30%;" />
 
 - 集群控制器其实就是一个broker，只不过它**除了具有一般  broker 的功能之外，还负责分区首领的选举**。集群里第一个启动的 broker 通过在 Zookeeper 里**创建一个临时节点/controller 让自己成为控制器**。其他 broker 在启动时也会尝试创建这个节点，不过它们会收到一个**“节点已存在”的异常**，然后“意识”到控制器节点已存在。**其他 broker 在控制器节点上创建Zookeeper watch 对象（观察者模式）**，这样它们就可以**收到这个节点的变更通知**。
 
