@@ -1,22 +1,23 @@
-### ViewResolver
+### ViewResolver（视图解析器）
 
 ------
 
 [TOC]
 
-##### 01：概述
+##### 01：视图解析器【重要】
 
-- 所有的请求，经 Controller 处理之后，会返回一个 **ModelAndView 对象(逻辑视图名)**，获得 ModelAndView 对象之后，视图解析器就会选择相应的View，渲染后返回给浏览器；
-- 渲染的过程中，发挥作用的就是 **ViewResolver 和 View**，当 handler 返回的 ModelAndView 中**只是逻辑视图名和对象值**，Spring MVC 根据逻辑视图匹配相应的 ViewResolver，把其解析为真正的视图 View 对象，View 进行视图渲染，把结果返回给浏览器；
+- 所有的请求，经 Controller 处理之后，会返回一个 ModelAndView 对象（逻辑视图名），获得 ModelAndView 对象之后，Spring MVC **根据逻辑视图匹配相应的 ViewResolver，把其解析为真正的视图 View 对象**，View 进行视图渲染，返回给浏览器；
+- 渲染的过程中，发挥作用的就是 **ViewResolver 和 View**，当 handler 返回的 ModelAndView 中**只是逻辑视图名和对象值**；
+- 直接使用 @ResponseBody 注解会**绕过视图解析器**，直接将对象作为 HTTP 响应内容返回；
 
-##### 02：ViewResolver、View
+##### 02：ViewResolver & View
 
-- ViewResolver：把一个逻辑上的视图名称解析为一个真正的视图；
-- View ：用于渲染视图，然后返回给客户端；
+- ViewResolver：把一个逻辑视图解析为一个真正的视图；
+- View ：用于渲染视图，返回给客户端；
 
 ##### 03：ViewResolver API
 
-- 视图解析器组视图渲染链，可以通过 order 属性来指定其在 ViewResolver 链中的位置，order 的值越小优先级越高；
+- 视图解析器组成视图渲染链，可以通过 order 属性来指定其在 ViewResolver 链中的位置，order 的值越小优先级越高；
 
 ###### AbstractCachingViewResolver
 
@@ -28,7 +29,7 @@
 - 默认的 prefix 和 suffix 都是空串，支持返回的视图名称中包含；
   - redirect：前缀(RedirectView) ，return "redirect:/user"; 
   - forword：前缀( InternalResourceView )
-- 使用 UrlBasedViewResolver 时，必须**指定属性viewClass，表示解析成哪种视图**
+- 使用 UrlBasedViewResolver 时，必须指定属性viewClass，表示解析成哪种视图；
 
 ###### InternalResourceViewResolver
 
@@ -57,7 +58,7 @@
 </bean>
 ```
 
-###### FreeMarkerViewResolver 、VolocityViewResolver
+###### FreeMarkerViewResolver & VolocityViewResolver
 
 - 两个视图解析器都继承了 UrlBasedViewResolver ，FreeMarkerViewResolver 会把 Controller 处理方法返回的**逻辑视图解析为 FreeMarkerView**，而 VolocityViewResolver 会把返回的逻辑视图解析为 VolocityView；
 - FreeMarkerViewResolver：按照 UrlBasedViewResolver 拼接 URL 的方式进行视图路径的解析；

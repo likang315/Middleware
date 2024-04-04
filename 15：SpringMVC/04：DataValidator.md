@@ -1,4 +1,4 @@
-### DataValidator（数据校验）
+### Data Validator（数据校验）
 
 ------
 
@@ -7,7 +7,7 @@
 ##### 01：概述
 
 - Spring MVC 拥有自己独立的**数据校验框架**，同时支持 JSR 303 标准的校验框架，**用于对 web 组件的 Java Bean 中的字段的值进行验证**。 
-- hibernate validation 是对这个规范，它提供了相应的实现，并扩展了校验注解，如@Email，@Length，@Range等等；
+- Spring 框架通常使用 **Validator 接口**和它的实现类来进行数据验证；
 
 ##### 02：使用方式
 
@@ -22,11 +22,11 @@
 
 ###### 注解
 
-- 把注解标记在需要验证的**实体类的属性上或是其对应的get方法上**即可，再在 Controller 处使用 @Valid 注解验证其属行；
+- 把注解标记在**需要校验的实体类的属性上或是其对应的get方法上即可，并且在 Controller 处使用 @Valid 注解；**
 - @NotNull 指定此 username 字段不允许为空，当验证失败时将从之前指定的 messageSource 中，获取“username.not.empty” **对应的错误信息**，此处只有通过"{错误消息键值}"格式指定的才能从 messageSource 获取；
 
 ```java
-@NotNull(message = "#{stuGlobalKey property is null !!!}")
+@NotNull(message = "#{stuGlobalKey} property is null !}")
 public String stuGlobalKey;
 ```
 
@@ -37,7 +37,7 @@ public String stuGlobalKey;
 @RequestMapping("/validate")
 public class HelloWorldController {
   	@RequestMapping("/hello")
-    public String validate(@Valid @ModelAttribute("user") UserModel user, Errors errors){
+    public String validate(@Valid @ModelAttribute("user") UserModel user, BindingResult errors){
       if(errors.hasErrors()) {
         // ...
         return "validate/error";
@@ -47,7 +47,7 @@ public class HelloWorldController {
       }
     }
 }
-// @Valid 告知 Spring MVC 此命令对象在绑定完毕后需要进行JSR-303验证
+// @Valid注解用于告诉 Spring 执行数据验证，并将验证结果存储在BindingResult中
 // 如果验证失败，取错误信息，然后将错误信息添加到 errors 错误对象中
 ```
 

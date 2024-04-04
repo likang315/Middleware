@@ -6,30 +6,23 @@
 
 ##### 01：概述
 
-![](https://github.com/likang315/Middleware/blob/master/15：SpringMVC/photos/Spring-MVC.png?raw=true)
+<img src="https://github.com/likang315/Middleware/blob/master/15：SpringMVC/photos/Spring-MVC.png?raw=true" style="zoom:47%;" />
 
 - MVC（Model-View-Controller）模式提供了一种软件架构模式，用于将应用程序的逻辑层、表示层和控制层分离。提高代码的可维护性和可扩展性。
   1. **模型（Model）：**负责应用程序的业务逻辑和数据处理；
   2. **视图（View）：**负责用户界面的呈现；
   3. **控制器（Controller）：**负责处理用户输入并相应地更新模型和视图。
-
-- Spring（父）、Spring MVC（子） 是两个管理对象的容器，并且是**父子容器**；
-- Spring MVC 用于构建 WEB  应用，管理 web 组件的 Bean。Spring 用于管理 dao & service 层 Bean；
+- Spring MVC 是 Spring Framework 中的一个模块，用于构建Web应用程序；
 
 ##### 02：MVC Request 流程【重要】
 
-1. **前端控制器：**请求先访问Spring的 DispatcherServlet (前端控制器)
-   - Spring MVC 所有的请求都会通过一个前端控制器（front controller），是常用的 Web 应用程序模式，**一个单实例的Servlet** 将请求委托给WEB应用程序的其他组件来执行实际的处理;
-
-2. **处理映射：**DispatcherServlet 将请求转发给 Spring MVC 控制器（controller）
-   - 控制器是一个用于处理请求的 Spring 组件，DispatcherServlet 需要知道应该将请求发送给哪个控制器，所以 DispatcherServlet会查询一个或多个**处理器映射（handler mapping）**来确定请求的下一站在哪，处理器映射会**根据请求所携带的 URL 信息**来进行决策，Map的key；
-
+1. **前端控制器：**所有的请求先访问 Spring 的 DispatcherServlet；
+   - Spring MVC 所有的请求都会通过一个前端控制器（front controller），是常用的 Web 应用程序模式；
+   - DispatcherServlet：**一个单实例的Servlet** 将请求委托给WEB应用程序的其他组件来执行实际的处理；
+2. **处理器映射：**DispatcherServlet 将请求转发给 Spring MVC 控制器（controller）
+   - DispatcherServlet 需要知道应该将请求发送给哪个控制器，所以 DispatcherServlet 会查询一个或多个**处理器映射（Handler Mapping）**来确定请求的下一站在哪，处理器映射会**根据请求所携带的 URL 信息**来进行决策，Map的key；
 3. **控制器处理：**选择合适的控制器后，DispatcherServlet 会将请求发送给选中的控制器；
-   - 到了控制器，请求会卸下其负载（用户提交的信息）并等待控制器处理这些信息，将处理的结果封装成Model ，通常由POJO组成；
-
-4. **模型和视图：**控制器将模型和视图名返回给前端控制器：
-   - 控制器会将请求连同模型数据和用于渲染的视图名发送回 DispatcherServlet，DispatcherServlet 将根据视图名选择相应的视图解析器（ ViewResolver）；
-
+   - 处理器处理请求，将处理的结果封装成 ModelAndView，发送回 DispatcherServlet，DispatcherServlet 将根据视图名选择相应的视图解析器（ ViewResolver）；
 5. **视图解析器**：渲染数据；
    - 将它交付的模型数据，使用**视图解析器将模型数据渲染输出**，然后通过响应对象传递给客户端；
 
@@ -51,8 +44,7 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
                              http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-    <!--在web.xml配置监听器ContextLoaderListener,
-它的作用就是启动Web容器时，自动装配 ApplicationContext 的配置信息 -->
+    <!-- 配置监听器ContextLoaderListener, 它的作用就是启动Web容器时，自动装配 ApplicationContext容器 -->
     <listener>
         <listener-class>
             org.springframework.web.context.ContextLoaderListener
@@ -71,7 +63,7 @@
         <param-value>classpath:spring/applicationContext.xml</param-value>
     </context-param>
 
-    <!--	CharacterEncodingFilter是Spring框架提供的默认字符集过滤器，当forceEncoding为True时候，
+    <!-- CharacterEncodingFilter是Spring框架提供的默认字符集过滤器，当forceEncoding为True时候，
 则强制覆盖之前的编码格式，避免页面乱码。-->
     <filter>
         <filter-name>characterEncodingFilter</filter-name>
@@ -89,7 +81,6 @@
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
     <!-- DispatcherServlet是Spring默认的请求分发器，一般请求分发会根据请求Url的一些设置来进行不同资源请求的分发，分发到各个不同的处理器中，如静态资源分发和数据接口分发，但是静态资源分发完全可以由Tomcat代劳而不经过Spring，所以在Web.xml你经常会见到如下配置，激活Tomcat的defaultServlet处理静态文件：
 将此配置写在DispatcherServlet之前，让DefaultServlet先拦截请求，不经过Spring
 -->
@@ -113,8 +104,6 @@
         <servlet-name>default</servlet-name>
         <url-pattern>*.xml</url-pattern>
     </servlet-mapping>
-
-
     <!-- DispatcherServlet是使用SpringMvc的重要配置，DispatcherServlet是Servlet转发器，可以配置多个DispatcherServlet来实现转发，在其配置中需要配置匹配规则，然后将拦截到的请求分发到请求目标，这里指的请求目标，实际就是Controller。
 在DispatcherServlet的初始化过程中，框架会在web应用的 WEB-INF文件夹下寻找名为
 [servlet-name]-servlet.xml 的配置文件，生成文件中定义的bean。也可以使用自己的配置文件名称  -->
@@ -147,14 +136,11 @@
 </webapp>
 ```
 
-###### 配置视图解析器（spring-mvc-servlet.xml）
+###### 配置视图解析器
 
 - /WEB-INF/views/hello.jsp :前缀+视图名+后缀
 
 ```XML
-<!--通过Web.xml 引入-->
-xmlns:mvc="http://www.springframework.org/schema/mvc"
-
 <bean id="jspViewResolver"
       class="org.springframework.web.servlet.view.InternalResourceViewResolver">
  	<property name="prefix" value="/WEB-INF/views/"/>
@@ -165,10 +151,9 @@ xmlns:mvc="http://www.springframework.org/schema/mvc"
 ###### 编写控制器
 
 ```java
-@controller
+@RestController
 @RequestMapping（"/hello")
 public class HelloWorldController { 
-
     @RequestMapping("/world")
     public String helloWorld(Model model) {
         model.addAttribute("message", "Hello World!");

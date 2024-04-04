@@ -1,28 +1,30 @@
-###  DataBinder（数据绑定）
+###  DataBinder
 
 ------
 
 [TOC]
 
-##### 01：DataBinder 流程【重要】
+##### 01：DataBinder 流程
 
-![](https://github.com/likang315/Middleware/blob/master/14%EF%BC%9ASpringMVC/photos/DataBinder.png?raw=true)
+- 在Spring MVC中用于将请求参数绑定到 Java 对象上；
+
+<img src="https://github.com/likang315/Middleware/blob/master/15：SpringMVC/photos/DataBinder.png?raw=true" style="zoom:57%;" />
 
 1. **通过 WebDataBinderFactory，产生 DataBinder 实例**
-   - Spring MVC 框架将 ServletRequest 对象及目标方法的入参实例传递给 WebDataBinderFactory 实例，以创建DataBinder实例；
-   
+   - Spring MVC 框架将 ServletRequest 对象及目标方法的入参实例传递给 WebDataBinderFactory 实例，以创建DataBinder 实例；
+
 2. 调用 **ConversionService** 
    - DataBinder 调用装配在 Spring MVC 上下文中的 ConversionService 组件进行数据**类型转换、数据格式化**工作，将 Servlet 中的请求信息填充到入参对象中；
-   
+
 3. **调用 Validator 校验**
    - 调用 Validator 组件对已经绑定了请求消息的入参对象进行数据合法性校验，并最终生成数据绑定结果 BindingResult 对象；
-   
+
 4. **BindingResult** 中的入参对象和校验错误对象，将它们**赋给处理方法的入参**；
-- Spring MVC 通过**反射机制**对目标处理方法进行解析，将请求消息绑定到处理方法的入参中；
+   - Spring MVC 通过**反射机制**对目标处理方法进行解析，将请求消息绑定到处理方法的入参中；
 
 ##### 02：ConvertionService
 
-- HttpMessageConvert<T> 和 ConversionService 是不同的两种东西，前者用于转换请求信息和响应信息，后者将请求消息中一个对象转换为另一个我们需要的对象；
+- `HttpMessageConvert<T>` 和 ConversionService 是不同的两种东西，前者用于转换请求信息和响应信息，后者将请求消息从一个对象转换为另一个我们需要的对象；
 
 
 ###### ConversionService ：类型转换的核心接口
@@ -42,7 +44,7 @@
 
 
 ```java
-// 将请求信息中（多个对象）的一个对象转换为一个Location对象,自定义类型转换器
+// 将请求信息中（多个对象）的一个对象转换为一个Location对象，自定义类型转换器
 public class ConvertLocation implements Converter<String, Location> {
     @Override
     public Location convert(String str) {
@@ -85,7 +87,7 @@ public String action(@RequestParam("location")Location location){
 - 从格式化的数据中获取真正的数据以完成数据绑定，并将处理完成的数据输出为格式化的数据，是 spring 的格式化框架；
 
 
-######    Formatter <T>： 实现此接口，重写parse（）
+######    `Formatter<T>`：实现此接口，重写 parse 方法
 
 - String print(T fieldValue ,  Locale locale)
   - 将类型为 T 的成员对象根据本地化不同输出为不同的格式化字符串
@@ -148,15 +150,3 @@ FormattingConversionService(class)  extends GenericConversionService implments C
     </property>
 </bean>
 ```
-
-##### 07：HandlerMapping、HandlerAdapter
-
-###### HandlerMapping
-
-- 实现类RequestMappingHandlerMapping，它会处理 @RequestMapping 注解，并将其注册到请求映射表中；
-
-
-###### HandlerAdapter
-
-- 实现类RequestMappingHandlerAdapter，则是处理请求的适配器，确定调用哪个类的哪个方法，并且构造，方法参数，返回值；
-- HandlerMapping把配置的Controller，注册到请求映射表中，然后HandlerAdapter处理请求，确定调用哪一个Controller方法；

@@ -148,7 +148,6 @@ public class LoginRequiredInterceptor implements HandlerInterceptor {
 
 ##### 05：过滤器和拦截器的区别【重要】
 
-- 过滤器在拦截器之前执行，过滤一些非法URL，编码字符串等；
-- 过滤器可以**对所有的请求**起作用，而拦截器**只能对 Controller 层**有用；
-- 过滤器依赖于 servlet，拦截器依赖Spring MVC框架；
-- 过滤器依赖于**方法的回调**实现，拦截器基于**反射机制**的；
+1. 过滤器依赖于 Servlet，基于**回调函数**实现，拦截器依赖 Spring 框架，基于 **AOP** 的；
+2. 过滤器可以**对所有的请求**起作用，而拦截器**只能对 Controller 层**有用；
+3. 过滤器在拦截器之前执行，过滤一些非法URL，编码字符串等；
