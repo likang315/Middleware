@@ -175,7 +175,7 @@ public void validateAccount(int account) {
 
 ###### ProceedingJoinPoint 【连接点对象】
 
-- 作用：任何一个增强方法都可以通过**将第一个入参声明为JoinPoint**，访问到切点上下文的信息；
+- 作用：任何一个增强方法都可以通过**将第一个入参声明为 JoinPoint**，访问到切点上下文的信息；
 
 - ProceedingJoinPoint 继承了JoinPoint接口
 

@@ -47,7 +47,6 @@
 ```xml
 <bean id="aa" class="com.xzy.pojo.Tear" lazy-init="true" scope="prototype"
       init-method="init">
-   
 </bean>
 ```
 
@@ -55,29 +54,21 @@
 
 ```java
 @Bean
-@Scope(ConfigurableBeanFactory.Scope_PROTOTYPE)
-Public Notepad notepad(){
-     return new Notepad();
-}
-
-@Bean
 @Scope(“prototype”)
 Public Notepad notepad() {
     return new Notepad();
 }
-
-<bean id="" class="" scope="prototype">
 ```
 
-| 作用域         | 描述                                                         |
-| -------------- | ------------------------------------------------------------ |
-| singleton      | 在spring IoC容器仅存在一个Bean实例，Bean以单例方式存在，**默认值，Threadlocal** |
-| prototype      | 每次从容器中调用Bean时，都返回一个新的实例，即每次调用getBean()时，相当于执行newXxxBean()  ，克隆 |
-| request        | 每次HTTP请求都会创建一个新的Bean，该作用域**仅适用于WebApplicationContext环境** |
-| session        | 同一个HTTP Session共享一个Bean，不同Session使用不同的Bean，仅适用于WebApplicationContext环境 |
-| global-session | 一般用于Portlet应用环境，该运用域仅适用于WebApplicationContext环境 |
+|     作用域     | 描述                                                         |
+| :------------: | ------------------------------------------------------------ |
+|   singleton    | 在spring IoC容器仅存在一个Bean实例，Bean以单例方式存在，**默认值，Threadlocal** |
+|   prototype    | 每次从容器中 getBean 时，都返回一个新的实例 ，克隆           |
+|    request     | 每次 HTTP 请求都会创建一个新的Bean，**仅适用于WebApplicationContext环境** |
+|    session     | 同一个HTTP Session共享一个Bean，不同Session使用不同的Bean，仅适用于WebApplicationContext环境 |
+| global-session | 一般用于 Portlet 应用环境，该运用域仅适用于WebApplicationContext环境 |
 
-##### 03：实例化Bean【三种】
+##### 03：实例化 Bean
 
 ###### 类构造器实例化
 
@@ -115,18 +106,18 @@ public class ClientService {
 
 ##### 04：Bean 的生命周期【重要】
 
-- Bean的定义——Bean的初始化——Bean的使用——Bean的销毁。
 
-
-1. Spring 先对 bean 进行实例化，调用构造器；
-2. Spring 将 值 和 bean 的引用注入到 bean 对应的属性中
-3. Bean 初始化的两种方式
-   1. init-method="方法名" ，通过xml配置调用自定义方法
-   2. 实现 InitializingBean  接口，重写afterPropertiesSet方法
-4. bean 已经准备就绪， 可以被应用程序使用了， 它们将一直驻留在应用上下文中， 直到该应用上下文被销毁
-5. 上下文被销毁时调用
-   1. destory-method="方法名" ，通过xml 文件配置销毁对象
-   2. 实现 DisposableBean 接口，重写destory（）
+1. **实例化：**Spring 先根据 xml 或注解配置对 bean 进行实例化，；
+2. **属性设置：**Spring 将 值 和 bean 的引用注入到 bean 对应的属性中
+3. **Bean 后置处理器**（Bean Post-Processors）：如果 Bean 实现了 `BeanPostProcessor` 接口，在这个阶段会调用其 `postProcessBeforeInitialization` 方法。初始化之前进行一些操作；
+4. **Bean 初始化**（Initialization Method）：
+   1. 实现 InitializingBean  接口，重写afterPropertiesSet方法
+   2. init-method="方法名" ，通过xml配置调用自定义方法
+5. **Bean 后置处理器（续）**：如果 Bean 实现了 `BeanPostProcessor` 接口，在这个阶段会调用其 `postProcessAfterInitialization` 方法；
+6. **使用：**bean 已经准备就绪， 可以被应用程序使用， 它们将一直在容器中， 直到该应用上下文被销毁；
+7. **销毁：**当 spring 容器关闭时调用
+   1. 实现 DisposableBean 接口，重写destory（）
+   2. destory-method="方法名" ，通过xml 文件配置销毁对象
 
 ###### 默认的初始化和销毁方法
 

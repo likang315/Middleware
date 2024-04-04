@@ -1,4 +1,4 @@
-### Exception
+### Spring Exception
 
 ------
 
@@ -6,7 +6,8 @@
 
 ##### 01：统一异常处理
 
-1. 统一在Controller 层处理异常、参数校验；
+1. 统一在 Controller 层处理异常、参数校验；
+1. service 层的异常没有被捕获，继续向上抛，到 Controller 被处理；
 
 ##### 02：示例
 
@@ -19,16 +20,14 @@
  */
 @Slf4j
 @ControllerAdvice
-@RequiredArgsConstructor
 public class ExceptionResolver {
   	/**
-  	 * 所有Controller 抛出的异常都会进行拦截处理
+  	 * 所有 Controller 抛出的异常都会进行拦截处理
   	 */
-   	@ExceptionHandler
+    @ExceptionHandler(value = BizException.class)  
     @ResponseBody
-    public ApiResult doResolveException(Exception e) {
+    public ApiResult doBizException(Exception e) {
         log.error("unknow exception:", e);
-        QMonitor.recordOne(MonitorConstant.UNKNOW_EXCEPTION);
         return ApiResult.error(CodeMessage.SYSTEM_ERROR, "未知问题");
     }
   
@@ -47,7 +46,6 @@ public class ExceptionResolver {
     @ResponseBody
     public ApiResult doParamException(RpcException e) {
         log.error("Illegal arg exception:{}", e.getMessage());
-        QMonitor.recordOne(MonitorConstant.ILLEGAL_ARG_EXCEPTION);
         return ApiResult.error(CodeMessage.SYSTEM_ERROR, "参数异常");
     }
   

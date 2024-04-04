@@ -6,23 +6,23 @@
 
 ##### 01：Spring
 
-- 一个容器，由6容器来负责管理对象的生命周期和对象间的关系；
+- 一个容器，由容器来负责**管理对象的生命周期和对象间的关系**；
 - Spring的 **IOC** 容器降低了业务对象替换的复杂性，降低了组件之间的**耦合度（解耦）**；
-- Spring的 **AOP** 支持允许将一些通用任务如**安全、事务、日志**等进行集中式管理，从而提供了更好的复用
-- Spring的ORM和DAO提供了与**第三方持久层框架（MyBatis）良好整合**，并简化了底层的数据库访问；
+- Spring的 **AOP** 支持允许将一些通用任务如**安全、事务、日志**等进行集中式管理，从而提供了更好的复用；
+- Spring的 ORM 和 DAO 接口，提供了与**第三方持久层框架（MyBatis）良好整合**，并简化了底层的数据库访问；
 
 ##### 02：Spring Module
 
-![](https://github.com/likang315/Middleware/blob/master/13%EF%BC%9ASpring/photos/spring-module.png?raw=true)
+<img src="https://github.com/likang315/Middleware/blob/master/14：Spring/photos/spring-module.png?raw=true" style="zoom:57%;" />
 
 ###### 	核心模块
 
-- 数据访问(持久层)，Web，AOP（面向切面编程），Core Container（核心容器），消息传递和测试；
+- 数据访问（持久层），Web，AOP（面向切面编程），Core Container（核心容器），测试；
 
 
 ###### 	核心容器需导入的Jar
 
-- Spring-core
+- spring-core
 - spring-beans
 - spring-context
 - spring-context-support
@@ -30,7 +30,7 @@
 
 ##### 03：IOC（Inversion of Control）
 
-- 控制反转，应用本身不负责**依赖对象的创建及销毁**，依赖对象的创建及维护是由外部容器负责的，控制权就由应用转移到了外部容器，**控制权的转移就是所谓控制反转**。
+- 控制反转，应用本身不负责**依赖对象的创建及销毁**，依赖对象的创建及销毁是由外部容器负责的，控制权就由应用转移到了外部容器，**控制权的转移就是所谓控制反转**。
 
 
 ###### 原理
@@ -40,12 +40,13 @@
 
 ###### 作用
 
-- 当业务出现变动时，工厂模式会需要进行相应的变化，就要就修改代码，而IOC是通过反射机制来实现的，它的对象都是动态生成的，允许我们不重新编译代码，其实就是**解耦，并且不用频繁的创建和销毁对象**，消耗资源；
+- 当业务出现变动时，工厂模式会需要进行相应的变化，就要就修改代码，而 IOC 是通过反射机制来实现的，它的对象都是动态生成的，允许我们不重新编译代码，其实就是**解耦，并且不用频繁的创建和销毁对象**，消耗资源；
 
 
 ###### DI（Dependency Injection）：依赖注入
 
-- 在运行期，由外部容器**动态地将依赖对象注入到相应的对象中**，就是在运行时能对**Bean对象属性赋值**，依赖注入是一种优秀的**解耦方式**，其可以让Bean以配置文件组织在一起，而不是以硬编码的方式耦合在一起。
+- IOC 的一种实现方式；
+- 在运行期，由外部容器**动态地将依赖 对象注入到相应的对象中**，就是在运行时能对 **Bean 对象属性赋值**，依赖注入是一种优秀的**解耦方式**，其可以让 Bean 以配置文件组织在一起，而不是以硬编码的方式耦合在一起。
 
 
 ##### 04：AOP (Aspect Oriented Programming) 
@@ -55,7 +56,7 @@
 
 ###### 原理
 
-- 通过动态代理 和 cglib代理实现的；
+- 通过动态代理和 cglib 代理实现的；
 
 
 ##### 05：Spring 配置的三种方式
@@ -117,13 +118,13 @@ public static void main(String[] args) {
 
 ###### ApplicationContext 容器
 
-- Spring最常用的**应用上下文容器接口**，该接口有如下两个实现类：；
-- ClassPathXmlApplicationContext: 从类加载路径下搜索xml配置文件，并根据配置文件来初始化Spring容器
+- Spring最常用的**应用上下文容器接口**，SpringBoot 默认的容器，该接口有如下两个实现类；
+- ClassPathXmlApplicationContext：从类加载路径下搜索 xml 配置文件，并根据配置文件来初始化 Spring 容器
   - 类路径：
     - **webapp/WEB-INF/classes**
-      - 存放src目录java文件编译之后的class文件，xml、properties等资源配置文件，是一个定位资源的入口，默认的classpath；
+      - 存放 src 目录java文件编译之后的class文件，xml、properties等资源配置文件，是一个定位资源的入口，默认的classpath；
     - maven构建项目时候 **resource**目录，默认的classpath ；
-- FileSystemXmlApplicationContext: 从文件系统的相对路径或绝对路径下去搜索配置文件，并根据配置文件来初始化Spring容器
+- FileSystemXmlApplicationContext：从文件系统的相对路径或绝对路径下去搜索配置文件，并根据配置文件来初始化Spring容器
 
 ```java
 public static void main(String[] args) {

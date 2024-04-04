@@ -40,12 +40,12 @@
 
 ##### 02：什么情况下循环依赖可以被处理？
 
-- Spring解决循环依赖是**有前置条件的**
+- Spring 解决循环依赖是**有前置条件的**
 
   1. 出现循环依赖的**Bean必须要是单例**
   2. 依赖注入的方式**不能全是构造器注入的方式**（两个相互依赖的类都是通过构造器注入）
 
-- 为了测试依赖解决情况和注入方式的关系，我们做以下四种测试
+- 四种场景
 
   - 构造器注入是在创建对象时将依赖项传递给**对象的构造函数**，而setter注入是在创建对象后通过**对象的setter方法**将依赖项传递给对象。
   
@@ -71,7 +71,7 @@
 
 ###### 简单的循环依赖
 
-- ![](https://github.com/likang315/Middleware/blob/master/15%EF%BC%9ASpringBoot/photos/Spring%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png?raw=true)
+- <img src="https://github.com/likang315/Middleware/blob/master/16：SpringBoot/photos/Spring循环依赖.png?raw=true" style="zoom:47%;" />
 
   1. 调用getBean( ) 方法。
 
@@ -89,12 +89,12 @@
      `getSingleton(beanName, true)`这个方法**实际上就是到缓存中尝试去获取Bean，整个缓存分为三级**
 
      1. `singletonObjects`，一级缓存，存储的是所有创建好了的单例Bean；
-     2. `earlySingletonObjects`，二级缓存，存储的是完成实例化但还未进行属性注入及初始化的对象；
+     2. `earlySingletonObjects`，二级缓存，存储的是**完成实例化但还未进行属性注入及初始化的对象**；
      3. `singletonFactories`，三级缓存，提前暴露的一个单例工厂；
 
      因为A是第一次被创建，所以不管哪个缓存中必然都是没有的，因此会进入`getSingleton`的另外一个重载方法`getSingleton(beanName, singletonFactory)`。
 
-  3. 调用getSingleton(beanName, singletonFactory)
+  3. 调用 getSingleton(beanName, singletonFactory)
 
      - 创建完成后将对象添加到一级缓存singletonObjects中；
 
@@ -132,9 +132,9 @@
 
 1. 在给B注入的时候为什么要注入一个代理对象？
 
-   - 当我们**对A进行了`AOP`代理**时，**说明我们希望从容器中获取到的就是A代理后的对象而不是A本身**，因此把A当作依赖进行注入时也要注入它的代理对象;
+   - 当我们**对A进行了`AOP`代理**时，**说明我们希望从容器中获取到的就是A代理后的对象而不是A本身**，因此把A当作依赖进行注入时也要注入它的代理对象；
 
-2. 明明初始化的时候是A对象，那么**Spring是在哪里将代理对象放入到容器中**的呢？
+2. 明明初始化的时候是A对象，那么 **Spring是在哪里将代理对象放入到容器中**的呢？
 
    - 在B完成初始化后，Spring又调用了一次`getSingleton`方法，这一次传入的参数又不一样了，**false可以理解为禁用三级缓存**，在为B中注入A时已经**将三级缓存中的工厂取出，并从工厂中获取到了一个对象放入到了二级缓存中**，所以这里的这个方法就是**从二级缓存中获取到这个代理后的A对象**。`exposedObject == bean`可以认为是必定成立的。
 
@@ -188,7 +188,7 @@
 
 - Spring是如何解决的循环依赖？
 
-  答：Spring通过**三级缓存**解决了循环依赖，其中**一级缓存为单例池（`singletonObjects`）二级缓存为早期曝光对象`earlySingletonObjects`，三级缓存为早期曝光对象工厂（`singletonFactories`）。**当A、B两个类发生循环引用时，在A完成实例化后，就使用**实例化后的对象去创建一个对象工厂（ObjectFactory），并添加到三级缓存中**，如果A被AOP代理，那么通过这个工厂获取到的就是A代理后的对象，如果A没有被AOP代理，那么这个工厂获取到的就是A实例化的对象。当A进行属性注入时，会去创建B，同时B又依赖了A，所以**创建B的同时又会去调用getBean(a)来获取需要的依赖，此时的getBean(a)会从缓存中获取，第一步，先获取到三级缓存中的工厂；第二步，调用对象工工厂的getObject方法来获取到对应的对象，得到这个对象后将其注入到B中**。紧接着B会走完它的生命周期流程，包括初始化、后置处理器等。当B创建完后，会将B再注入到A中，此时A再完成它的整个生命周期。
+  答：Spring通过**三级缓存**解决了循环依赖，其中**一级缓存为单例池（`singletonObjects`）二级缓存为早期曝光对象`earlySingletonObjects`，三级缓存为早期曝光对象工厂（`singletonFactories`）。**当A、B两个类发生循环引用时，在A完成实例化后，就使用**实例化后的对象去创建一个对象工厂（ObjectFactory），并添加到三级缓存中**，如果A被AOP代理，那么通过这个工厂获取到的就是A代理后的对象，如果A没有被AOP代理，那么这个工厂获取到的就是A实例化的对象。当A进行属性注入时，会去创建B，同时B又依赖了A，所以**创建B的同时又会去调用getBean(a)来获取需要的依赖，此时的getBean(a)会从缓存中获取，第一步，先获取到三级缓存中的工厂；第二步，调用对象工工厂的getObject方法来获取到对象 A，得到这个对象后将其注入到B中**。紧接着B会走完它的生命周期流程，包括初始化、后置处理器等。当B创建完后，会将B再注入到A中，清除二级缓存，将 A 放入到一级缓存中，此时，A也完成了它的整个生命周期。
 
 
 

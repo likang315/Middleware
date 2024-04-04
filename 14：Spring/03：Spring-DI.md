@@ -6,62 +6,58 @@
 
 ##### 01：依赖注入
 
-- Spring框架的核心功能之一就是通过依赖注入的方式来**管理Bean之间的依赖关系**。
+- Spring框架的核心功能之一就是通过依赖注入的方式来**管理 Bean 之间的依赖关系**。
 
-##### 02：注入方式【重要】
+##### 02：Spring 的注入方式【重要】
 
-###### 基于构造方法的注入
+###### 构造器注入
 
 - 当**容器调用带有一组参数的类构造方法**时，基于构造方法的 DI 就完成了，其中每个参数代表一个对其他类的依赖；
-- 如果你想要向一个对象传递一个引用，你需要使用 标签的 **ref** 属性，如果你想要直接传递值，那么你应该使用 **value** 属性；
-- 若构造方法不止一个参数时，应**按照顺序 ref** 否则可能会存在歧义，如果你使用 type 属性显式的指定了构造函数参数的类型，容器也可以使用与简单类型匹配的类型；
 
-```xml
-<bean id="foo" class="x.y.Foo">
-  <constructor-arg ref="bar"/>
-  <constructor-arg ref="baz"/>
-</bean>
-<bean id="bar" class="x.y.Bar"/>
-<bean id="baz" class="x.y.Baz"/>
+- ```java
+  public class A {
+      private B dependency;
+      public B (B dependency) {
+          this.dependency = dependency;
+      }
+      // other methods
+  }
+  ```
 
-<bean id="exampleBean" class="examples.ExampleBean">
-  <constructor-arg type="int" value="7500000"/>
-  <constructor-arg type="java.lang.String" value="42"/>
-</bean>
+###### Setter 方法注入
 
-<!-- 最方便的使用方式 -->
-<bean id="exampleBean" class="examples.ExampleBean">
-  <constructor-arg index="0" value="7500000"/>
-  <constructor-arg index="1" value="42"/>
-</bean>
-```
+- 当容器调用一个**无参的构造函数**或一个**无参的静态 factory 方法**来初始化你的 bean 后，**容器会调用 Setter 方法**，因此基于Setter 方法的注入就完成了。
 
-###### 基于 Setter 方法注入
+- ```java
+  public class A {
+      private B dependency;
+      public void setDependency(B dependency) {
+          this.dependency = dependency;
+      }
+      // other methods
+  }
+  ```
 
-- 当容器调用一个**无参的构造函数**或一个**无参的静态 factory 方法**来初始化你的 bean 后，**容器会调用Setter 方法**，因此基于Setter 方法的注入就完成了。
+###### 注解注入
 
+- 通过在Bean类中使用`@Autowired`或`@Resource`注解**直接标记需要注入的字段**，Spring容器会自动将这些字段注入到Bean中；
 
-```xml
-<bean id="exampleBean" class="examples.ExampleBean">
-  <property name="beanOne" ref="anotherExampleBean"/>
-  <property name="integerProperty" value="1"/>
-</bean>
+###### XML 注入
 
-<bean id="anotherExampleBean" class="examples.AnotherBean"/>	
+- 通过XML配置文件来实现;
 
-<bean id="mappings" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-  <property name="properties">
-    <value>
-      jdbc.driver.className=com.mysql.jdbc.Driver
-      jdbc.url=jdbc:mysql://localhost:3306/xupt
-    </value>
-  </property>
-</bean>
-```
-
-###### 两种注入方式的区别
-
-- 在基于构造方法注入中，我们使用的是〈bean〉标签中的〈constructor-arg〉元素，而在基于Setter 方法的注入中，我们使用的是〈bean〉标签中的〈property〉元素；
+- ```xml
+  <bean id="foo" class="x.y.Foo">
+    <constructor-arg ref="bar"/>
+  </bean>
+  <bean id="bar" class="x.y.Bar"/>
+  
+  <bean id="exampleBean" class="examples.ExampleBean">
+    <property name="beanOne" ref="anotherExampleBean"/>
+    <property name="integerProperty" value="1"/>
+  </bean>
+  <bean id="anotherExampleBean" class="examples.AnotherBean"/>
+  ```
 
 
 ##### 03：Inner beans
@@ -142,7 +138,7 @@
 </bean>
 ```
 
-##### 06：Bean 的注入方式【重要】
+##### 06：Bean 的自动装配方式【重要】
 
 - Spring 容器可以在不使用`<constructor-arg>`和`<property>` 元素的情况下，**自动装配**相互协作的 bean 之间的关系，这有助于减少编写一个大的基于 Spring 的应用程序的 XML 配置的数量。
 
@@ -155,10 +151,8 @@
 
 ```xml
 <!--手动装配--->
-<bean id="ac_100" class="twm.demo.Account"/>
 <bean id="user" class="twm.demo.User">
   <property name="username" value="Yanglan"/>
-  <property name="account" ref="ac_100"/>
 </bean>
 <!-- 自动装配 -->
 <bean id="account" class="twm.demo.Account"/>
@@ -171,9 +165,5 @@
   <property name="username" value="Yanglan"/>
 </bean>
 
-<bean id="yanglan" class="twm.demo.User" autowire="constructor">
-</bean>
+<bean id="yanglan" class="twm.demo.User" autowire="constructor"/>
 ```
-
-
-

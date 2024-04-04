@@ -1,4 +1,4 @@
-### Spring-@Schedule 源码剖析
+### Spring Schedule 源码剖析
 
 ------
 
@@ -23,11 +23,22 @@
 2. `Bean`后置处理器`ScheduledAnnotationBeanPostProcessor`会解析和处理每一个符合特定类型的`Bean`中的`@Scheduled`注解（注意`@Scheduled`只能使用在方法或者注解上），并且把解析完成的方法封装为不同类型的`Task`实例，缓存在`ScheduledTaskRegistrar`中的。
 3. `ScheduledAnnotationBeanPostProcessor`中的钩子接口方法`afterSingletonsInstantiated()`在所有单例初始化完成之后回调触发，在此方法中设置了`ScheduledTaskRegistrar`中的任务调度器（`TaskScheduler`或者`ScheduledExecutorService`类型）实例，并且调用`ScheduledTaskRegistrar#afterPropertiesSet()`方法添加所有缓存的`Task`实例到任务调度器中执行。
 
-##### 04：任务调度器
+##### 04：任务调度器【重要】
 
-- `Scheduling`模块支持`TaskScheduler`或者`ScheduledExecutorService`类型的任务调度器，而`ScheduledExecutorService`其实是`JDK`并发包`java.util.concurrent`的接口，一般实现类就是调度线程池`ScheduledThreadPoolExecutor`。实际上，`ScheduledExecutorService`类型的实例最终会通过**适配器模式**转变为`ConcurrentTaskScheduler`，所以这里只需要分析`TaskScheduler`类型的执行器。
+- `Scheduling`模块支持`TaskScheduler`或者`ScheduledExecutorService`类型的任务调度器，而`ScheduledExecutorService`其实是`JDK`并发包`java.util.concurrent`的接口，一般实现类就是调度线程池`ScheduledThreadPoolExecutor`。
+- 实际上，`ScheduledExecutorService`类型的实例最终会通过**适配器模式**转变为`ConcurrentTaskScheduler`，所以这里只需要分析`TaskScheduler`类型的执行器。
 
-###### org.springframework.scheduling.TaskScheduler【顶层接口】
+###### ScheduledThreadPoolExecutor 详解
+
+1. 当调用ScheduledThreadPoolExecutor的scheduleAtFixedRate()方法或者scheduleWithFixedDelay()方法时，会向ScheduledThreadPoolExecutor的DelayQueue添加一个实现了RunnableScheduledFuture接口的ScheduledFutureTask；
+2. 线程池中的线程从**DelayQueue**中获取ScheduledFutureTask，然后执行任务；
+
+###### 原理
+
+- 定时任务先执行 corn，**计算出任务的执行时间，放入延迟队列中**，假如队列中有多个定时任务，**按照延迟时间最小堆排序，把延迟是时间最小的放到队列的头部**，有一个工作者线程轮询获取任务（持有时间器），判断 delayTime 是否为0 ，若是执行，否则丢弃任务，继续等待；
+- @Scheduled 的定时任务执行机制；
+
+###### org.springframework.scheduling.TaskScheduler（顶层接口）
 
 - ```java
   public interface TaskScheduler {
@@ -153,7 +164,7 @@
 
 ##### 06：Task 的调度
 
-- 如果没有配置`TaskScheduler`或者`ScheduledExecutorService`类型的`Bean`，那么调度模块**只会创建一个线程**去调度所有装载完毕的任务，如果任务比较多，很有可能会造成大量任务饥饿，表现为存在部分任务不会触发调度的场景（这个是调度模块生产中经常遇到的故障，需要重点排查是否没有设置`TaskScheduler`或者`ScheduledExecutorService`）。
+- 如果没有配置`TaskScheduler`或者`ScheduledExecutorService`类型的`Bean`，那么调度模块**只会创建一个线程**去调度所有装载完毕的任务，如果任务比较多，很有可能会造成大量任务饥饿，表现为**存在部分任务不会触发调度的场景**（这个是调度模块生产中经常遇到的故障，需要重点排查是否没有设置`TaskScheduler`或者`ScheduledExecutorService`）。
 
 ###### 并发执行
 
@@ -185,7 +196,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
 ##### 07：源码分析（ScheduledAnnotationBeanPostProcessor）
 
 - BeanPostProcessor：`Bean`实例初始化前后分别回调，其中，后回调的`postProcessAfterInitialization()`方法就是用于**解析**`@Scheduled`和**装载**`ScheduledTask`。
-- DestructionAwareBeanPostProcessor：具体的`Bean`实例销毁的时候回调，用于`Bean`实例销毁的时候**移除和取消对应的任务**实例。
+- DestructionAwareBeanPostanProcessor：具体的`Bean`实例销毁的时候回调，用于`Bean`实例销毁的时候**移除和取消对应的任务**实例。
 - DisposableBean接口：当前`Bean`实例销毁时候回调，也就是`ScheduledAnnotationBeanPostProcessor`自身被销毁的时候回调，用于**取消和清理**所有的`ScheduledTask`。
 
 
