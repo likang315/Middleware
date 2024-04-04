@@ -4,7 +4,7 @@
 
 [TOC]
 
-##### 01：JDBC
+##### 01：SpringBoot 自动配置
 
 1. 添加依赖
 
@@ -38,9 +38,7 @@
       spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
       ```
 
-3. 编写controller，services层
-
-##### 02：耦合 MyBatis
+##### 02：SpringBoot 自定义配置
 
 - 实际就是添加Mybatis依赖，使用其Jar包，操作数据库而已；
 
@@ -57,7 +55,7 @@
 
 2. 配置数据库用户名，密码等；
 
-3. 定义Mapper，mybatis-config.xml 文件位置
+3. 配置数据源，定义Mapper，mybatis-config.xml 文件位置
 
    ```java
    /**
@@ -90,7 +88,8 @@
         */
        @Bean(name = "writeDataSource")
        @Primary
-       public DataSource merchantDataSource(@Qualifier("pxcDataSourceConfig") PxcDataSourceConfig pxcDataSourceConfig) {
+       public DataSource merchantDataSource(
+           @Qualifier("pxcDataSourceConfig") PxcDataSourceConfig pxcDataSourceConfig) {
            DruidDataSource dataSource = new DruidDataSource();
            dataSource.setDriverClassName(pxcDataSourceConfig.getDbName());
            dataSource.setUrl(pxcDataSourceConfig.getNamespace());
@@ -109,11 +108,14 @@
         */
        @Bean(name = "writeSqlSessionFactory")
        @Primary
-       public SqlSessionFactory sqlSessionFactory(@Qualifier("writeDataSource") DataSource dataSource) throws Exception {
+       public SqlSessionFactory sqlSessionFactory(
+           @Qualifier("writeDataSource") DataSource dataSource) throws Exception {
            SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
            bean.setDataSource(dataSource);
-           bean.setConfigLocation(new PathMatchingResourcePatternResolver().getResource("classpath:mybatis/mybatis-config.xml"));
-           bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mybatis/mappers/**/*.xml"));
+           bean.setConfigLocation(new PathMatchingResourcePatternResolver()
+                                  .getResource("classpath:mybatis/mybatis-config.xml"));
+           bean.setMapperLocations(new PathMatchingResourcePatternResolver().
+                                   getResources("classpath:mybatis/mappers/**/*.xml"));
            return bean.getObject();
        }
    
@@ -125,7 +127,8 @@
         */
        @Bean(name = "transactionManager")
        @Primary
-       public DataSourceTransactionManager transactionManager(@Qualifier("writeDataSource") DataSource dataSource) {
+       public DataSourceTransactionManager transactionManager
+           (@Qualifier("writeDataSource") DataSource dataSource) {
            return new DataSourceTransactionManager(dataSource);
        }
    
@@ -137,7 +140,8 @@
         */
        @Bean(name = "writeSqlSessionTemplate")
        @Primary
-       public SqlSessionTemplate sqlSessionTemplate(@Qualifier("writeSqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
+       public SqlSessionTemplate sqlSessionTemplate(
+           @Qualifier("writeSqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
            return new SqlSessionTemplate(sqlSessionFactory);
        }
    
@@ -148,7 +152,7 @@
 
 5. 编写dao 层，操作数据库；
 
-##### 03：分布式事务
+##### 03：分布式事务【两阶段提交】
 
 - 一个方法中使用了事务，但是由于此方法中调用了两个方法，分别对应存储不同的数据库中，在这两个方法中，有个抛出了异常，是因为此方法上的事务是只针对单独起作用的哪个数据库，不是针对全部，因此要把两个事务耦合在一起；
 

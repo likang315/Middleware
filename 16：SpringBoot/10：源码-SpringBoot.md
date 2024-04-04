@@ -9,6 +9,11 @@
 - 构造一个**SpringApplication**的实例，并把我们的启动类**xxxApplication.class**作为参数传进去，然后运行它的 run 方法。
 
   ```java
+  public static void main(String[] args) {
+      SpringApplication app = new SpringApplication(AtlantisZeusApplication.class);
+      app.run(args);
+  }
+  
   public static ConfigurableApplicationContext run(Object[] sources, String[] args) {
       return (new SpringApplication(sources)).run(args);
   }
@@ -20,7 +25,7 @@
       this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
       // 设置应用类型是 Standard 还是 Servlet
       this.webApplicationType = deduceWebApplicationType();
-      // 设置初始化器(Initializer),最后会调用这些初始化器
+      // 设置初始化器(Initializer)，最后会调用这些初始化器
       setInitializers(
           (Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
       // 设置监听器(Listener)
