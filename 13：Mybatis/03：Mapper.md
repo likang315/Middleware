@@ -4,9 +4,13 @@
 
 [TOC]
 
+##### 00：Mapper
+
+- 由 **Java Dao 接口和 Mapper.xml** 文件共同组成，其实就是**通过 XML 和反射来动态实现 Java 接口实现类**，负责发送 SQL，并返回结果。
+
 ##### 01：mybatis-config.xml
 
-- 用于MyBatis 全局配置的
+- 用于 MyBatis 全局配置
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -69,16 +73,16 @@
 
 ###### 自定义 TypeHandler
 
-- 自定义类型处理器**必须实现 TypeHandler  或者继承BaseTypeHandler类，并且重写四个方法**；
+- 自定义类型处理器**必须实现 TypeHandler  或者继承 BaseTypeHandler 类，并且重写四个方法**；
 
-###### 引入方式【两种】
+###### 引入方式
 
 - 使用 mybatis-config.xml 配置
 
   ```xml
   <!--加载类型处理器-->
   <typeHandlers>
-    <package name="com.xupt.dao.typehandler" />
+      <package name="com.xupt.dao.typehandler" />
   </typeHandlers>
   ```
 
@@ -114,32 +118,31 @@
 @MappedJdbcTypes(value={JdbcType.LONGVARCHAR})
 @MappedTypes(value = {HotelInfo.class})
 public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
+    @Override
+    public void setNonNullParameter(PreparedStatement preparedStatement, int i,
+                                    HotelInfo hotelInfo, JdbcType jdbcType)
+        throws SQLException {
+        preparedStatement.setString(i, JsonUtils.writeValueAsString(hotelInfo));
+    }
 
-  @Override
-  public void setNonNullParameter(PreparedStatement preparedStatement, int i,
-                                  HotelInfo hotelInfo, JdbcType jdbcType)
-    throws SQLException {
-    preparedStatement.setString(i, JsonUtils.writeValueAsString(hotelInfo));
-  }
+    @Override
+    public HotelInfo getNullableResult(ResultSet resultSet, String s) throws SQLException {
+        return JsonUtils.readValue(resultSet.getString(s), HotelInfo.class)
+            .orElse(new HotelInfo());
+    }
 
-  @Override
-  public HotelInfo getNullableResult(ResultSet resultSet, String s) throws SQLException {
-    return JsonUtils.readValue(resultSet.getString(s), HotelInfo.class)
-      .orElse(new HotelInfo());
-  }
+    @Override
+    public HotelInfo getNullableResult(ResultSet resultSet, int i) throws SQLException {
+        return JsonUtils.readValue(resultSet.getString(i), QMHotelInfo.class)
+            .orElse(new HotelInfo());
+    }
 
-  @Override
-  public HotelInfo getNullableResult(ResultSet resultSet, int i) throws SQLException {
-    return JsonUtils.readValue(resultSet.getString(i), QMHotelInfo.class)
-      .orElse(new HotelInfo());
-  }
-
-  @Override
-  public HotelInfo getNullableResult(CallableStatement callableStatement, int i)
-    throws SQLException {
-    return JsonUtils.readValue(callableStatement.getString(i), HotelInfo.class)
-      .orElse(new HotelInfo());
-  }
+    @Override
+    public HotelInfo getNullableResult(CallableStatement callableStatement, int i)
+        throws SQLException {
+        return JsonUtils.readValue(callableStatement.getString(i), HotelInfo.class)
+            .orElse(new HotelInfo());
+    }
 }
 ```
 
@@ -151,7 +154,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - org.apache.ibatis.type.**EnumOrdinalTypeHandler**
   - 使用整数下标作为参数传递的
 
-##### 05：对象工厂(ObjectFactory)
+##### 05：对象工厂（ObjectFactory）
 
 - 当 MyBatis 构建一个结果返回时，都会**使用（ObjectFactory）去构建 POJO**，需要做的仅仅是实例化目标类，要么通过默认**无参的构造方法**，要么在参数映射存在的时候通过**有参的构造方法**来实例化；
 - 默认的：org.apache.ibatis.reflection.factory.DefaultObjectFactory；
@@ -159,7 +162,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 ##### 06：配置多环境
 
 - environments 可以注册多个数据源（DataSource），尽管可以**配置多个环境（数据源）**，每个 SqlSessionFactory 实例只能选择其一，选择环境：default="id"
-- 可以不再Mybatis中配置，在和Spring 整合时，可以在Spring容器中配置；
+- 可以不在 Mybatis 中配置，在和 Spring 整合时，可以**在 Spring 容器中配置**；
 
 ###### dataSource
 
@@ -167,7 +170,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - 数据源的配置；
 - 数据库事务(transactionManager)的配置；
 
-###### Type 属性（三种数据源类型）
+###### Type 属性
 
 - JNDI：JNDI 数据源，org.apache.ibatis.datasource.jndiDataSourceFactory 来获取数据源；
 - **POOLED：** 数据库连接池，org.apache.ibatis.datasource.pooled.PooldDataSource 实现；
@@ -197,7 +200,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 </environments>
 ```
 
-##### 07：注解配置Mapper接口
+##### 07：注解配置 Mapper 接口
 
 - MyBatis 支持**使用注解来配置映射语句**，当我们使用基于注解的映射器接口时，则不再需要mappe文件；
 - @Insert
@@ -206,7 +209,8 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - @Select 
 
 ```java
-@Insert({"INSERT INTO user (id, username, passwd) VALUES (#{id}, #{username},#{passwd})"})int insertUser(User user);
+@Insert({"INSERT INTO user (id, username, passwd) VALUES (#{id}, #{username},#{passwd})"})
+int insertUser(User user);
 ```
 
 ##### 08：全局标签
@@ -214,11 +218,11 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - **cache**
   - 用于声明这个 namespace 使用二级缓存，并且可以自定义配置；
 - **cache-ref**
-  - 引用别的命名空间的Cache配置，两个命名空间的操作使用的是同一个Cache；
+  - 引用别的命名空间的 Cache 配置，两个命名空间的操作使用的是同一个 Cache；
 - sql
   - 复用SQL语句
 - resultMap
-  - 用于定义实例对象和数据库表的字段的关系；
+  - 用于定义实例对象和数据库表的字段的映射关系；
 - select
   -  映射查询语句
 - insert
@@ -228,7 +232,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - delete
   - 映射删除语句
 
-##### 09：select
+##### 09：查询操作
 
 ###### 配置映射
 
@@ -268,27 +272,23 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
         List<Map<String, Map<String, String>>> queryUserInfo();
         ```
   
-- resultMap ：用于把复杂的pojo进行结果映射，一对多、一对一时；
+- resultMap ：用于把复杂的pojo进行结果映射，一对多、一对一；
 
 - ```xml
-  <!--类类型的参数对象，id、username 和 password 属性将会被查找，将它们的值传入预处理语句的参数中-->
-  <insert id="insertUser" parameterType="user">
-    insert into user (id, username, password) values (#{id}, #{username}, #{password})
-  </insert>
   <!--自动把列名作为key，value作为值返回-->
   <select id="selectUser" parameterType="int" resultType="map">
     SELECT * FROM user WHERE ID = #{id}
   </select>
   <!--数据库列名和类属性不一致-->
   <select id="selectUsers" parameterType="int" resultType="person">
-    select user_id as "id",user_name as "userName", hashed_password as "hashedPassword"
+    select user_id as "id", user_name as "userName", hashed_password as "hashedPassword"
     from user where id = #{id}
   </select>
   ```
 
 ###### 自动映射
 
-- 如果你的数据库是规范命名的，即数据库每一个单词都用下划线分隔，POJO 采用驼峰式命名方法，可以**设置 mapUnderscoreToCamelCase 为 true，MyBatis 就会自动回填这些字段而无需任何配置，或者也可以实现从数据库到 POJO 的自动映射**。
+- 如果你的数据库是规范命名的，即数据库每一个列名都用下划线分隔，POJO 采用驼峰式命名方法，可以**设置 mapUnderscoreToCamelCase 为 true，MyBatis 就会自动回填这些字段而无需任何配置，或者也可以实现从数据库到 POJO 的自动映射**。
 
 - 自动映射可以在config.xml 中 settings 元素中配置 autoMappingBehavior 属性值来设置其策略
   - NONE：取消自动映射；
@@ -304,17 +304,17 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
   </settings>
   ```
 
-##### 10：更新操作
+##### 10：更新操作【重要】
 
 - id：命名空间中的唯一标识符，用于确定使用接口的哪个方法；
 - **useGeneratedKeys：主键回填**，插入数据成功后将会返回数据库自动生成的主键ID；
   - 默认值：false，仅对 insert 和 update 有用；
 - parameterType：传入语句的参数的完全限定类名或别名
 - **keyProperty**：标记哪个属性是主键，默认：未设置（unset）；
+- **keyColumn**：通过生成的键值设置表中的列名，这个设置在某些数据库是必须的，当主键列不是表中的第一列的时候需要设置；
 - **flushCache：缓存清空**，任何时候只要该语句被调用，都会导致本地缓存和二级缓存都会被清空，默认值：true
 - timeout：抛出异常之前，驱动程序等待数据库返回请求结果的秒数，默认值： 未设置（unset）
 - **statementType**：发送sql语句的方式，STATEMENT，PREPARED 或 CALLABLE，**默认值：PREPARED**；
-- keyColumn：通过生成的键值设置表中的列名，这个设置在某些数据库是必须的，当主键列不是表中的第一列的时候需要设置；
 
 ###### 主键回填
 
@@ -337,7 +337,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 </insert>
 ```
 
-###### 字符串替换【参数占位】
+###### 字符串替换（占位符）
 
 - 使用 ${} 会自动加上 ' ' ，用于字符串，会出现Sql注入问题；
 - 使用 #{} 不会，替换值；
@@ -346,7 +346,7 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 
 ```xml
 <!--复用的SQL语句-->
-<sql id="userColumns"> ${alias}.id,${alias}.username </sql>
+<sql id="userColumns"> id，name</sql>
 
 <select id="selectUsers" resultType="map">
   SELECT
@@ -362,7 +362,6 @@ public class JsonTypeHandler extends BaseTypeHandler<HotelInfo> {
 - 用于**参数命名**，参数命名后就能根据名字得到参数值，正确的将参数传入sql语句中；
 - 使用@Param后，使用**#{}**，${} 都可以，否则只能使用#{} ;
 - 若不使用@Param时，参数只能有一个，并且为JavaBean；
-- 修改参数名，匹配SQL字段；
 
 ```xml
 Student queryStudentByName(@Param("name") String name)
@@ -374,7 +373,7 @@ Student queryStudentByName(@Param("name") String name)
 </select>
 ```
 
-##### 12：ResultMap【结果映射】
+##### 12：ResultMap（结果映射）
 
 - 定义一个复杂结果集的映射关系，包含子对象，也可以用于驼峰式和下划线字段互转；
   - type：表示返回结果的类型（pojo类）；
@@ -489,9 +488,9 @@ Student queryStudentByName(@Param("name") String name)
 - 一个老师对应多个学生，一个学生对应多个老师，三个表之间维护；
 - 打平产出所有学生，然后系统做Map；
 
-##### 16：缓存【禁用】
+##### 16：MyBatis 缓存【重要】
 
-![](/Users/likang/Code/Git/Middleware/12：Mybatis/photos/cache.png)
+![](https://github.com/likang315/Middleware/blob/master/13：Mybatis/photos/cache.png?raw=true)
 
 ###### 一级缓存
 
@@ -503,9 +502,9 @@ Student queryStudentByName(@Param("name") String name)
 
 - LocalCache 类，MyBatis提供了默认下**基于HashMap**的缓存实现；
 
-- 有多个SqlSession或者分布式的环境下，数据库写操作会引起脏数据，建议设定缓存级别为**Statement**；
+- 有多个 SqlSession 或者分布式的环境下，数据库写操作会引起脏数据，建议设定缓存级别为**Statement**；
 
-- **一级缓存配置：**
+- **一级缓存配置**
 
   ```xml
   <setting name="localCacheScope" value="SESSION"/>
@@ -513,9 +512,9 @@ Student queryStudentByName(@Param("name") String name)
 
 ###### 二级缓存
 
-- 开启二级缓存后，会使用**CachingExecutor装饰Executor**，进入一级缓存的查询流程前，先在CachingExecutor进行二级缓存的查询；
+- 开启二级缓存后，会使用**CachingExecutor 装饰 Executor**，进入一级缓存的查询流程前，先在 CachingExecutor 进行二级缓存的查询；
 
-- **默认情况下，不开启二级缓存**，二级缓存开启后，**同一个namespace下的所有操作语句**，都影响着同一个Cache，即二级缓存被多个SqlSession共享，是一个全局的变量；
+- **默认情况下，不开启二级缓存**，二级缓存开启后，**同一个 namespace下的所有操作语句**，都影响着同一个Cache，即二级缓存被多个 SqlSession 共享，是一个全局的变量；
 
 - **二级缓存配置**
 
@@ -525,7 +524,7 @@ Student queryStudentByName(@Param("name") String name)
        <setting name="cacheEnabled" value="true"/>
        ```
 
-  2. 在MyBatis的映射XML中配置cache或者 cache-ref，用于声明这个namespace使用二级缓存【单一配置】；
+  2. 在MyBatis的 XML 中配置cache或者 cache-ref，用于声明这个namespace使用二级缓存【单一配置】；
 
      - ```xml
        <cache eviction="LRU" flushInterval="100000" size="1024" readOnly="true"/>
@@ -539,7 +538,7 @@ Student queryStudentByName(@Param("name") String name)
        - readOnly：只读，意味着缓存数据只能读取而不能修改，它的默认值为 false；
        - 默认情况下，该 mapper 文件全部使用二级缓存，可以使用select元素的useCache="false"属性限制使用；
 
-- **缺陷**
+- **缺点**：禁用
 
   - 通常我们会为每个单表创建单独的映射文件，由于MyBatis的二级缓存是基于`namespace`的，多表查询语句所在的`namspace`无法感应到其他`namespace`中的语句对**多表查询中涉及的表进行的修改，引发脏数据**问题。
   - < cache-ref />  : 共享一个nameSpace；
@@ -570,11 +569,9 @@ Student queryStudentByName(@Param("name") String name)
         DELETE FROM local_student
         <where>
             <if test="date != null and date.length() > 0">
-                date <![CDATA[ <= ]]> #{date}>
+                c_time <![CDATA[ <= ]]> #{date}
             </if>
         </where>
     </delete>
     ```
-
-    
 

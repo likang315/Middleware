@@ -1,4 +1,4 @@
-### Mybatis
+### MyBatis
 
 ------
 
@@ -6,7 +6,7 @@
 
 ##### 01：概述
 
-- 通过抽像底层的 JDBC 代码，自动化 SQL 结果集产生 Java 对象，Java 对象的**数据持久化数据库**中的过程，使得对 SQL 的使用变的容易，是一个半自动化的 ORM （对象关系映射）框架，需要**手动匹配提供 POJO和SQL的映射关系**；
+- MyBatis 是一个开源的**持久层框架**，它简化了在 Java 应用程序中使用 JDBC 操作数据库的过程。通过MyBatis，开发人员可以**使用 XML 或注解来配置 SQL ，映射 Java 对象和数据库记录之间的关系**（半 ORM）。
 
 - ORM：是通过使用描述对象和数据库之间映射的元数据，将程序中的对象自动持久化到数据库中。
 
@@ -26,7 +26,7 @@
 </dependency>
 ```
 
-###### mybatis 配置文件：mybatis-config.xml
+###### MyBatis 配置文件（mybatis-config.xml）
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -38,11 +38,9 @@
         <!-- 在进行数据库字段和类属性名映射时，下划线自动转换为驼峰-->
         <setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
-
     <typeAliases>
         <package name="com.xupt.pojo"/>
     </typeAliases>
-
     <!-- 分模块部署时，dao层需要数据源-->
     <environments default="dev">
         <environment id="dev">
@@ -55,7 +53,6 @@
             </dataSource>
         </environment>
     </environments>
-
     <mappers>
         <!-- 引入映射器 -->
         <mapper resource = "mapper/StudentMapper.xml"/>
@@ -63,25 +60,23 @@
 </configuration>
 ```
 
-###### 编写映射接口,其实现类有 mybatis 自动实现 
+###### Dao 接口
 
 ```java
 @Repository
 public interface StudentMapper {
-  // 根据ID查询
-  List<Students> findStudentsById(@Param("uid") int id);
-  // 返回Map，一个对象
-  Map<String, Object> findById(int id);
+    // 根据ID查询
+    List<Students> findStudentsById(@Param("uid") int id);
 }
 ```
 
-###### 编写Mapper ，定义操作数据库的方法
+###### 编写Mapper （定义操作数据库的方法）
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 映射此 mapper 对应的接口 -->
+<!-- 通过 mapper 中 的 namespace 标签绑定接口，mybatis 会通过该绑定自动帮你找到对应要执行的SQL语句； -->
 <mapper namespace="com.zxy.mapper.StudentMapper">
     <resultMap type="students" id="stumap">
         <id property="studId" column="stud_id"/>
@@ -91,13 +86,8 @@ public interface StudentMapper {
     </resultMap>
 
     <!-- 简单数据类型 -->
-    <select id = "findStudentsById" parameterType = "int" resultType = "students">
+    <select id="findStudentsById" parameterType="int" resultType="students">
         select * from students where stud_id = #{uid}
-    </select>
-
-    <!-- 返回 Map 是一个数据时，根据数据库的字段和值生成map-->
-    <select id="findById" parameterType="int" resultType="map">
-        select * from students where stud_id = #{id}
     </select>
 </mapper>
 ```
