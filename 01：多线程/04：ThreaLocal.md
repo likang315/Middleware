@@ -26,7 +26,7 @@
 
 ##### 03：ThreadLocalMap【源码剖析】
 
-- 是 ThreadLocal 的一个内部类，一个 Map，仅用于维护线程本地值，**哈希表 Entry 使用了对键的弱引用，弱引用有助于GC回收；
+- 是 ThreadLocal 的一个内部类，一个 Map，仅用于维护线程本地值，**哈希表 Entry 使用了对键的弱引用，弱引用有助于GC回收**；
 - **ThreadLocalMap 是 Thread 类的一个字段，它用于存储线程本地变量**。每个线程可以在自己的ThreadLocalMap中存储和访问其本地变量，这样可以保证线程本地变量的隔离性和独立性。
 
 ###### 特性

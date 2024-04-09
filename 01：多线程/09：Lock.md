@@ -50,7 +50,7 @@ public interface Lock {
 
 - 队列同步器 AbstractQueuedSynchronizer，是用来**构建锁**或者其他同步组件的基础框架，它使用了一个**volatile int 成员变量表示同步状态**，通过**内置的队列来完成获取资源的线程的排队工作**
 - private volatile int state;
-  - 获取同步状态的语义是**使用 CAS 更新 status = 1，并且将 AQS 的 exclusiveOwnerThread 设置为当前线程。**
+  - 获取同步状态的语义是**使用 CAS 更新 state = 1，并且将 AQS 的 exclusiveOwnerThread 设置为当前线程。**
 
 
 ###### AQS 原理
@@ -162,7 +162,7 @@ class Mutex implements Lock {
 ###### 同步队列
 
 - 同步器依赖内部的**同步队列（一个FIFO双向队列）来完成同步状态的管理**，当前线程获取同步状态失败时，同步器会将当前线程以及等待状态等信息构造成为一个节点（Node）并将其**加入同步队列进行自旋（判断该节点的前驱节点是否是头结点，若是则获取同步状态，若不是，则阻塞，超时和中断都可以唤醒该线程）**，当同步状态释放时，首节点会唤醒后面的结点，使其再次尝试获取同步状态。
-- 代码实现：java.util.concurrent.locks.ReentrantLock#lock 
+- 代码实现：java.util.concurrent.locks.ReentrantLock#lock
 
 ###### Node节点
 
@@ -182,7 +182,7 @@ class Mutex implements Lock {
 
 ​	同步器包含了两个节点类型的引用，**一个指向头节点，而另一个指向尾节点**，当一个线程成功地获取了同步状态，其他线程将无法获取到同步状态，转而被构造成为节点并加入到同步队列中，而这个**加入队列的过程必须要保证线程安全**，因此同步器提供了一个**基于CAS 的设置尾节点**的方法：compareAndSetTail(Node expect,Node update)，它需要传递当前线程“认为”的尾节点和当前节点，只有设置成功后，当前节点才正式与之前的尾节点建立关联。
 
-- 同步队列遵循FIFO，**首节点是获取同步状态成功的节点，首节点的线程在释放同步状态时，将会唤醒后继节点，而后继节点将会在获取同步状态成功时将自己设置为首节点**
+- 同步队列遵循FIFO，**头节点是获取同步状态成功的节点，头节点的线程在释放同步状态时，将会唤醒后继节点，而后继节点将会在获取同步状态成功时将自己设置为头节点**
 - 代码实现：java.util.concurrent.locks.AbstractQueuedSynchronizer#acquireQueued
 
 <img src="https://github.com/likang315/Middleware/blob/master/01：多线程/photos/同步队列的基本结构.png?raw=true" style="zoom:25%;" />
