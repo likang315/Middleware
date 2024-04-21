@@ -124,7 +124,7 @@
   1. 层数要少，磁盘 IO 次数少；
   2. 支持范围查询；
 
-- <img src="/Users/likang/Code/Git/Middleware/09：MySQL/photos/index.png" alt="index" style="zoom:60%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/09：MySQL/photos/index.png?raw=true" alt="index" style="zoom:60%;" />
 
 
 ###### 01：聚簇索引(主键索引)
