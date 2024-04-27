@@ -71,7 +71,7 @@
 
 ###### 简单的循环依赖
 
-- <img src="https://github.com/likang315/Middleware/blob/master/16：SpringBoot/photos/Spring循环依赖.png?raw=true" style="zoom:47%;" />
+- <img src="https://github.com/likang315/Middleware/blob/master/14：Spring/photos/Spring循环依赖.png?raw=true" style="zoom:47%;" />
 
   1. 调用getBean( ) 方法。
 

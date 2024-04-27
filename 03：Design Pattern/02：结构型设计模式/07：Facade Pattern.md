@@ -1,4 +1,4 @@
-### 门面（Facade Pattern）：属于结构型模式
+### 门面（Facade Pattern）：结构型模式
 
 ------
 

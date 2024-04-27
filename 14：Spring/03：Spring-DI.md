@@ -38,26 +38,9 @@
   }
   ```
 
-###### 注解注入
+###### 字段注入
 
 - 通过在Bean类中使用`@Autowired`或`@Resource`注解**直接标记需要注入的字段**，Spring容器会自动将这些字段注入到Bean中；
-
-###### XML 注入
-
-- 通过XML配置文件来实现;
-
-- ```xml
-  <bean id="foo" class="x.y.Foo">
-    <constructor-arg ref="bar"/>
-  </bean>
-  <bean id="bar" class="x.y.Bar"/>
-  
-  <bean id="exampleBean" class="examples.ExampleBean">
-    <property name="beanOne" ref="anotherExampleBean"/>
-    <property name="integerProperty" value="1"/>
-  </bean>
-  <bean id="anotherExampleBean" class="examples.AnotherBean"/>
-  ```
 
 
 ##### 03：Inner beans

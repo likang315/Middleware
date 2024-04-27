@@ -15,10 +15,10 @@
 - Lib：存放了tomcat 用到的 java 库 *.jar ；
 - Logs：存放所有日志；
 - Temp ：临时目录；
-- Webapps ：布署 web 应用（网站）的目录 ，web应用放置到此目录下浏览器可以直接访问；
+- Webapps ：布署 web 应用（网站）的目录 ，web 应用放置到此目录下浏览器可以直接访问；
 - Work ：工作目录，jsp 将来生成 java 文件都放在此目录；
 
-##### 0：配置 tomcat
+##### 03：配置 tomcat
 
 要求： 已安装 jdk 配置 path 和 classpath
 
@@ -27,7 +27,7 @@
 - Step3：运行%tomcat_home%/bin/startup.bat
 - Step4：打开浏览器  http://localhost:8080  (Tomcat的默认端口) ，可以修改
 
-##### 0：配置server.xml
+##### 04：配置server.xml
 
 ```xml
 <Server>
@@ -53,28 +53,28 @@
 
 - 把 tomcat 监听端口更改为 http 默认端口号 80 打开 %tomcat_home%/conf/server.xml
 
-##### 05：Tomcat 容器层器
+##### 05：Tomcat 容器
 
-![]()
+<img src="https://github.com/likang315/Middleware/blob/master/12：Tomcat/photos/Tomcat-Container.png?raw=true" style="zoom:57%;" />
 
-##### 0：Connector 处理一次请求
+##### 06：Connector 处理一次请求
 
-![]()
+<img src="https://github.com/likang315/Middleware/blob/master/12：Tomcat/photos/Connector.png?raw=true" style="zoom:80%;" />
 
 ##### 07：项目结构
 
 - **webapp**
 
-  - WEB资源Root目录，此目录下的WEB-INF 是安全目录，不能直接访问，必须跳转配置的URL，与已经有的路径都是站点的资源； 
+  - WEB 资源 Root 目录，此目录下的 WEB-INF 是安全目录，不能直接访问，必须跳转配置的URL，与已经有的路径都是站点的资源； 
 
 - **WEB目录**
 
-  ![]()
+  ![](https://github.com/likang315/Middleware/blob/master/12：Tomcat/photos/web-dir.png?raw=true)
 
 ##### 08：Tomcat 线程池
 
-- 只有是与网络有交互，不管是外部请求，还是内部发出，都用一个Tomcat线程池；
+- 只要是与网络有交互，不管是外部请求，还是内部发出，都用一个Tomcat线程池；
 
 ##### 09：Servlet 容器（Container）
 
-- 在一个Tomcat实例中，**每个Web应用程序都有自己的ServletContext**，但它们都**共享同一个Servlet容器（Servlet Container）**，它们之间共享同一个JVM进程和线程池，因此称为同一个容器。
+- 在一个 Tomcat 实例中，**每个 Web 应用程序都有自己的 ServletContext**，但它们都**共享同一个Servlet容器（Servlet Container）**，它们之间共享同一个JVM进程和线程池，因此称为同一个容器。

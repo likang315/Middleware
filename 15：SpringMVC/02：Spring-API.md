@@ -60,7 +60,7 @@ http://localhost:8080/handle3?userName=zhangsan&password=123
 @RequestMapping(value = "/login")
 public void login(HttpServletRequest request, HttpServletResponse response) {
     String userName = request.getParameter("userName");
-    response.addCookie(new Cookie("userName", userName))
+    response.addCookie(new Cookie("userName", userName));
 }
 ```
 

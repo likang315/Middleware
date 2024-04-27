@@ -13,7 +13,7 @@
 
 ###### Servlet
 
-- 在服务器中运行的小型Java程序，用于**接收和响应来自Web客户端的请求，一个servlet就是一个服务**；
+- 在服务器中运行的小型 Java 程序，用于**接收和响应来自Web客户端的请求，一个servlet就是一个服务**；
 - 它的生命周期由 Servlet 容器 (Tomcat) 来管理；
 - Servlet  **线程安全的**，单实例常驻于服务器内存的，使用 **ThreadLocal** 保证现场安全；
 - 实现 javax.servlet.Servlet 接口，重写 services 方法；
@@ -95,7 +95,7 @@ public class CheckLoginServlet extends HttpServlet {
 
 ##### 06：Servlet 生命周期【重要】
 
-1. 启动 tomcat ，工程的 web.xml 会被解析， **实例化 ServletContext 对象**；
+1. 启动 tomcat ，项目的 web.xml 会被解析， **实例化 ServletContext 对象**；
 2. 扫描 Servlet 类上的 Annotation，为**每一组 Servlet 的配置都生成一个 ServletConfig** 对象，共享ServletContext对象；
    - 如果 **loadOnStartup （Annotation上一个属性）有值**，启动 tomcat 就实例化 servlet 对象并调用 init 方法，否则话，第一次访问才实例化 Servlet 对象，loadOnStartup 值越小，越优先实例化；
 3. 用户第一次通过 url 访问 web 资源；
@@ -103,7 +103,7 @@ public class CheckLoginServlet extends HttpServlet {
 5. **实例化 Servlet 对象**，并调用 init( ) 把对应的 ServletConfig 对象传给 Servlet；
 6. 自动调用 Servlet 对象的 service( )；
 7. 第二次访问的 URL 对应 Servlet 时，直接调用 Servlet 对象的 service 方法，**Servlet 是单实例长驻服务器内存的，只有第一次访问才实例对象，并调用 init 方法**;
-8. 当服务器宕机时，会调用 Servlet 的 destory（），销毁 Servlet对象；
+8. 当服务器宕机时，会调用 Servlet 的 destory 方法，销毁 Servlet 对象；
 
 ##### 07：services( )
 

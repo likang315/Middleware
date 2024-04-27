@@ -150,7 +150,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
 - 可以把 FutureTask 交给Executor执行；
 - 也可以通过 ExecutorService.submit（…）方法返回一个FutureTask，然后执行 FutureTask.get() 方法或FutureTask.cancel（…）方法；
 
-##### 0：CompletableFuture
+##### 07：CompletableFuture
 
 - Future 对于结果的获取却是很不方便，只能通过阻塞或者轮询的方式得到任务的结果，**阻塞的方式显然和我们的异步编程的初衷相违背，轮询的方式又会耗费无谓的 CPU 资源**，而且也不能及时地得到计算结果;
 - CompletableFuture 提供了非常强大的Future的扩展功能，并且提供了**函数式编程**的能力，可以通过回调的方式处理计算结果，也提供了转换和组合 CompletableFuture 的方法；

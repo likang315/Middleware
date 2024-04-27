@@ -144,8 +144,6 @@ producer = new KafkaProducer<String, String>(kafkaProps);
 
   - 设置为 true 时，当幂等生产者被启用时，**生产者将给发送的每一条消息都加上一个序列号**。如果 broker 收到具有相同序列号的消息，那么它就会**拒绝第二个副本，而生产者则会收到 DuplicateSequenceException**，这个异常对生产者来说是无害的。
 
-
-
 ###### 顺序保证【重要】
 
 - 如果某些场景要求**消息是有序的**，那么消息是否写入成功也是很关键的，所以不建议把**retries 设为0**。可以把**max.in.flight.requests.per.connection 设为1**，这样在生产者尝试发送第一批消息时，就不会有其他的消息发送给broker。不过这样会**严重影响生产者的吞吐量**，所以只有在对消息的顺序有严格要求的情况下才能这么做。

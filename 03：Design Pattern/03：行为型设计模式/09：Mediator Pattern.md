@@ -78,9 +78,9 @@ public class Girl extends Base {
 
 public class Client {
   public static void main(String[] args) {
-    Boy boy=new Boy();
-    Girl girl=new Girl();
-    Mediator mediator=new Mediator();
+    Boy boy = new Boy();
+    Girl girl = new Girl();
+    Mediator mediator = new Mediator();
     // 和中介者建立连接
     boy.set(mediator);
     girl.set(mediator);

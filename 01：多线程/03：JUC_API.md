@@ -14,14 +14,15 @@
 - 由于 Java 单继承，当继承了 Thread 类后就无法再继承其它类；
 
 ```java
-Thread thread = new Thread() {
-    @Override
+Thread thread = new Thread(new Runnable() {
     public void run() {
-        for (int i = 0; i < 100; i++) {
-            System.out.println(i);
-        }
-    }
-};
+        System.out.println("1");
+    } 
+});
+
+Thread thread = new Thread(() -> {
+    System.out.println("2");
+});
 // 调用处于就绪状态，不允许显示创建线程，使用线程池，否则会创建大量同类的线程；
 thread.start();
 ```

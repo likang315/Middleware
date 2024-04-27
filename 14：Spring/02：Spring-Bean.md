@@ -75,7 +75,7 @@ Public Notepad notepad() {
 - 默认使用**无参的构造方法**实例化 Bean 对像；
 
 ```xml
-<bean id="exampleBean" class="com.xupt.ExampleBean />
+<bean id="exampleBean" class="com.xupt.ExampleBean"/>
 ```
 
 ###### 静态工厂方法实例化

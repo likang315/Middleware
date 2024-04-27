@@ -2,6 +2,8 @@
 
 ------
 
+[TOC]
+
 ##### 01：Mac 配置 tomcat
 
 1.  下载Tomcat
@@ -33,4 +35,4 @@
 1. 新增HTTP/2支持和TLS虚拟主机；
 2. 实现当前Servlet4.0规范草案；
 3. BIO connectors 不再支持Windows Itanium 和 Comet；
-4. Tomcat 9.0设计用于运行在Java se 8及以后的版本；
+4. Tomcat 9.0设计用于运行在Java SE 8及以后的版本；

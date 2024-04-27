@@ -34,6 +34,16 @@ public class Memento {
     return state;
   }  
 }
+// 备忘录管理者
+public class CareTaker {
+  private List<Memento> List = new ArrayList<Memento>();
+  public void add(Memento m){
+    List.add(m);
+  }
+  public Memento get(int index){
+    return List.get(index);
+  }
+}	
 //发起人
 public class Originator {
    private String state;
@@ -52,16 +62,6 @@ public class Originator {
 	   System.out.println("Current state:"+state);
    }
 }
-// 备忘录管理者
-public class CareTaker {
-  private List<Memento> List = new ArrayList<Memento>();
-  public void add(Memento m){
-    List.add(m);
-  }
-  public Memento get(int index){
-    return List.get(index);
-  }
-}	
 
 public class Client {
   public static void main(String[] args) {

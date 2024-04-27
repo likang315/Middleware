@@ -51,7 +51,7 @@ resp.addCookie(cookie);
 
 ##### 02：Session
 
-- Http通过**令牌的机制**完成和客户端的会话，是基于 Cookie 技术实现的，**存储在服务器中的文件系统**或者数据库中；
+- HTTP 通过**令牌的机制**完成和客户端的会话，是基于 Cookie 技术实现的，**存储在服务器中的文件系统**或者数据库中；
 
 
 ###### 原理：
@@ -61,20 +61,20 @@ resp.addCookie(cookie);
 
 ###### Session 的存储
 
-- 一般情况下，Session 都是存储在内存里，当服务器进程被停止或者重启的时候，内存里的session也会被清空，**如果设置了 session 的持久化特性，服务器就会把session保存到硬盘上**，当服务器进程重新启动或这些信息将能够被再次使用；
+- 一般情况下，Session 都是存储在内存里，当服务器进程被停止或者重启的时候，内存里的session也会被清空，**如果设置了 session 的持久化特性，服务器就会把 session 保存到硬盘上**，当服务器进程重新启动或这些信息将能够被再次使用；
 
 
 ##### 03：Interface HttpSession：本质也是一个Map存储
 
-- java.lang.Object **getAttribute** (java.lang.String name) ：通过Session的key 得到其value 
+- java.lang.Object getAttribute (java.lang.String name) ：通过Session的key 得到其value 
 
-- void **setAttribute**(java.lang.String name, java.lang.Object value) 
+- void setAttribute(java.lang.String name, java.lang.Object value) 
 
 - int getMaxInactiveInterval() ：得到 Session 在服务器的生命周期
 
 - void setMaxInactiveInterval(int interval)：设置Session的生命周期，秒为单位
 
-- boolean **isNew**() ：判断是不是新建的
+- boolean isNew() ：判断是不是新建的
 
 - java.lang.String   getId() ：得到Session的ID
 
@@ -103,60 +103,9 @@ session.setAttribute("loged", uname);
 
 ##### 05：统计网站的访问量
 
-###### 统计网站的访问量(PV)
-
-```java
-// 每个Web应用程序只有一个 ServletContext，且所有的 servlet 共享同一个ServletContext
-ServletContext context = ServletConfig.getServletContext();
-Integer count = null;
-synchronized (context) {
-    // 获取计数器变量
-    count = (Integer) context.getAttribute("counter");
-    if (null == count)
-      count = new Integer(1);
-    else
-      count = new Integer(count.intValue() + 1);
-    context.setAttribute("counter", count);
-}
-```
-
-###### 统计用户的访问量(UV)
-
-```java
-ServletContext context = ServletConfig.getServletContext();
-Integer count = null;
-synchronized (context) {
-    // 一个用户对应一个session，判断session是不是新的
-    if (session.isNew()) {
-        count = (Integer) context.getAttribute("counter");
-        if (null == count)
-            count = new Integer(1);
-        else
-            count = new Integer(count.intValue() + 1);
-        context.setAttribute("counter", count);
-	}
-}
-```
-
-###### 统计某个用户的访问量（ JsessionID ）
-
-```java
-public Integer totalCount(String jsessionId) {
-  ServletContext context = ServletConfig.getServletContext();
-  Integer count = null;
-  synchronized (context) {
-      // 用户对应的 SessionId 唯一的
-      if (jsesssionId == session.getId()) {
-          count = (Integer) context.getAttribute("counter");
-          if (null == count)
-            count = new Integer(1);
-          else
-            count = new Integer(count.intValue() + 1);
-          context.setAttribute("counter", count);
-      }
-  }
-}
-```
+- 统计网站的访问量（PV）
+- 统计用户的访问量（UV）
+- 统计某个用户的访问量（JsessionID）
 
 ##### 06：Cookie 禁用
 
@@ -173,6 +122,10 @@ public Integer totalCount(String jsessionId) {
    - ```xml
      <input type="hidden" name="jsessionid" 	value="ByOK3vjFD75aPnrF7C2Hmdn"> 
      ```
+
+##### 07：验证码
+
+- 由程序随机生成字母、数字或汉字的图片，并将图片上的**随机内容记在 session 中**，让用户看到图片后将随机值填写在表单项中提交给服务器，服务端程序将用户填写的信息与 Session 中的信息进行对比，关键在于不让能程序自动识辨出图片上的信息，所以一般我们都加干扰线、点，或旋转、缩放等。
 
 
 

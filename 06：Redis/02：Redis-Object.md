@@ -183,7 +183,7 @@
 - 目前来说， Redis 会在初始化服务器时， 创建一万个字符串对象， 这些对象包含了**从 `0` 到 `9999` 的**所有整数值， 当服务器需要用到值为 `0` 到 `9999` 的字符串对象时， 服务器就会使用这些共享对象， 而不是新创建对象。
 - <img src="https://github.com/likang315/Middleware/blob/master/06：Redis/photos/shared-memory.png?raw=true" style="zoom:60%;" />
 
-##### 11：对象的空转时长
+##### 11：对象的空转时长【重要】
 
 -  `redisObject` 结构包含的最后一个属性为 `lru` 属性， 该属性记录了对象最后一次被命令程序访问的时间
   - unsigned lru:22;
