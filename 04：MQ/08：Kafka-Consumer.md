@@ -121,13 +121,13 @@
 6. **enable.auto.commit**
 - 指定了消费者**是否自动提交偏移量**，默认值是true。
    - 如果把它设为true，还可以通过配置**auto.commit.interval.ms属性来控制提交的频率**，默认值：5s;
-7. partition.assignment.strategy
-
+7. **partition.assignment.strategy**
    - 决定哪些分区应该被分配给哪个消费者
    - Range
      - 该策略会把主题的若干个**连续**的分区分配给消费者；
    - RoundRobin
      - 该策略把主题的所有分区**逐个分配**给消费者，会给所有消费者分配相**同数量的分区**（或最多就差一个分区）。
+   - 消费者可以指定某个分区消费
 8. client.id
 
    - 任意字符串，broker 用它来标识从客户端发送过来的消息；
