@@ -63,15 +63,27 @@
 
 ###### 读取顺序：
 
-- /etc/my.cnf ----> /etc/mysql/my.cnf ----> /usr/local/mysql/etc/my.cnf ----> ~/my.cnf
+- /etc/my.cnf ----> /etcmysql/my.cnf ----> /usr/local/mysql/etc/my.cnf ----> ~/my.cnf
 
 
-##### 05：MySQL 服务的启动、关闭、查看状态
+##### 05：MySQL 服务的启动&关闭
 
-- 使用Systemctl 工具 
-  - systemctl restart mysql
-  - systemctl stop mysql
-  - systemctl status mysql
+- 安装目录下，./support-files 执行启动脚本；
+
+- ```sql
+  sudo ./mysql.server start
+  sudo ./mysql.server stop
+  ```
+
+- 登录MySQL
+
+  - 切换到 ./bin 目录执行
+
+    ```shell
+    mysql -u root -pmysql(密码) 
+    \q 
+    ```
+
 
 ##### 06：Mac 配置Path
 
@@ -103,11 +115,19 @@
 
 1. 关闭mysql服务
 2. cd /usr/local/mysql/bin/
-   - sudo su
-   - ./mysqld_safe --skip-grant-tables & ：关闭mysql验证功能
+   - ```sql
+     // 忘记登录密码是，可以关闭校验功能
+     sudo su
+     ./mysqld_safe --skip-grant-tables & ：
+     ```
 3. ./mysql
 4. FLUSH PRIVILEGES;  
-5. SET PASSWORD FOR 'root'@'localhost' = PASSWORD('你的新密码');
+5. 修改密码
+
+   - ```
+     ALTER USER 'root'@'localhost' IDENTIFIED BY '新密码';
+     ```
+
 
 ##### 09：MySQL登录、退出
 
