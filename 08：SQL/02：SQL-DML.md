@@ -7,22 +7,22 @@
 ##### 01：DML 【insert、delete、update、select】
 
 1. **INSERT INTO** 向表中插入数据
-  
+
    - INSERT INTO tableName(id，name，birth) VALUES(1，'jack','199-22-45'）)；
-   
+
      ```sql
      # 批量插入 
      INSERT INTO table_name (id, name,sex,address)
      VALUES
      (?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?)
      ```
-   
+
 2. **DELETE FROM ** 删除表中的数据，要加WHERE语句限定删除的记录，否则就是清空表操作
-  
+
    - DELETE FROM 表名 WHERE id=i;
-   
+
 3. **UPDATE**：修改表中的数据
-  
+
    - UPDATE 表名 SET 字段名=值，字段名=值 WHERE 限制记录的字段；
    - UPDATE stu t set t.name = 'mike', t.id = '1' where t.ID = '2';
 
@@ -379,67 +379,202 @@
     SELECT CAST('2019-08-29 16:50:21' AS DATE);
     ```
 
-##### 13：条件逻辑
+##### 13：IF 函数
 
-###### case 表达式
+###### 基本语法
 
-- 查找型case 表达式
+- IF(条件表达式，值1，值2)
+  - 如果表达式为 TRUE，返回值 1，为 FALSE，返回值 2。
+  - 返回值可以是任何值，比如：数值、字符串、时间、NULL、表达式、函数。
+
+###### 简单示例
+
+```SQL
+SELECT name,
+			 age,
+       IF(YEAR(age) <= 1995, '1班', '2班') AS class
+FROM Students;
+```
+
+###### IF函数嵌套（优先 CASE 表达式）
+
+```SQL
+SELECT id,
+       name,
+       age,
+       IF(id < 3, '1班', IF(id >= 7, '3班', '2班')) AS class
+FROM Students;
+```
+
+###### IF + 聚合函数
+
+```SQL
+SELECT t.name                                    AS t_name,
+       COUNT(*)                                  AS s_cnt,
+       IF(COUNT(*) >= 5, '5人及以上', '5人以下')   AS classfiy
+FROM Teachers t
+         LEFT JOIN Students s ON t.id = s.t_id
+GROUP BY t.name;
+```
+
+##### 14：CASE 表达式
+
+###### 执行逻辑
+
+- **顺序匹配、找到即停**：对于每一行，执行第一个 WHEN，若成立，则后续 WHEN 不执行，若都不匹配，则为 NULL。
 
 - ```sql
-  SELECT stu.name,
-         CASE
-             WHEN stu.sex = '1'
-                 THEN score.english
-             WHEN stu.sex = '2'
-                 THEN score.chinese
-             ELSE 'empty'
-         END score
-  FROM local_student_info stu
-           LEFT JOIN local_student_score score ON stu.stu_global_key = score.stu_global_key
+  -- 示例一
+  SELECT
+      stu.name AS name,
+      CASE
+          WHEN stu.sex = 1 THEN '男'
+          WHEN stu.sex = 2 THEN '女'
+          ELSE '其他'
+      END AS sex
+  FROM
+      local_student_info stu
+      
+  -- 示例二，如果第一个 WHEN score >= 60，则都及格了。
+  SELECT 
+    name,
+    score,
+    CASE 
+      WHEN score >= 90 THEN '优秀'  -- 最严格的条件放前面
+      WHEN score >= 80 THEN '良好'  -- 次严格
+      WHEN score >= 60 THEN '及格'  -- 较宽松
+      ELSE '不及格'
+    END AS rating
+  FROM scores;
   ```
 
-  - END 子句是可选的；
+- CASE 表达式是一个固定值，因此在能写列名和常量的地方，通常都可以写 CASE 表达式。
+
   - THEN 的表达式也可以是子查询；
 
-###### case 表达式的范例
+- **ELSE 语句尽量写上**，不写 ELSE 子句 时，CASE 表达式的执行结果是NULL，但是不写可能会造成“语法没有错 误，结果却不对”这种不易追查原因的麻烦，所以最好明确地写上 ELSE 子句。
 
-- 结果集转换
+###### NULL 值处理
 
-  - 列转行（两列数据转为一行）；
+```SQL
+CASE 
+	WHEN title IS NULL THEN  'unknown'
+  ELSE title
+END
+```
 
-- 选择性聚合
+###### 已有数据转化成新的方式统计
 
-  - ```sql
-    # 统计人力数
-    SELECT SUM(CASE
-                   WHEN sex = '1'
-                       THEN 1
-                   WHEN sex = '2'
-                       THEN 2
-                   ELSE 0
-        END) count
-    FROM local_student_info;
-    ```
+- ```sql
+  -- 统计每个区的人口，先分组，在统计
+  select
+      case
+          when '五道口' then '海淀区'
+          when '清河' then '海淀区'
+          when '六里桥' then '丰台区'
+          when '首经贸' then '丰台区'
+          else '其他'
+      end as calss_name,
+      SUM (population)
+  from
+      PopTbl
+  group by
+      case
+          when '五道口' then '海淀区'
+          when '清河' then '海淀区'
+          when '六里桥' then '丰台区'
+          when '首经贸' then '丰台区'
+          else '其他'
+      end as calss_name;
+      
+  -- 简化, 部分DB不支持
+  select
+      case
+          when '五道口' then '海淀区'
+          when '清河' then '海淀区'
+          when '六里桥' then '丰台区'
+          when '首经贸' then '丰台区'
+          else '其他'
+      end as calss_name,
+      SUM (population)
+  from
+      PopTbl
+  group by class_name
+  ```
 
-- 存在性检查
+###### 选择性聚合
 
-  - EXIST （）函数用于case 表达式；
+- ```sql
+  select
+      class_name,
+      -- 男性人口
+      SUM(
+          case
+              when sex = '1' then population
+              else 0
+          end
+      ) as cnt_m,
+      -- 女性人口
+      SUM(
+          case
+              when sex = '2' then population
+              else 0
+          end
+      ) as cnt_f
+  from
+      PopTbl2
+  group by
+      class_name;
+  ```
 
-- 除零错误
+###### UPDATE 时，做条件分支
 
-  - case 表达式判断为0时，指定为1；
+- ```SQL
+  -- 更新两次导致的脏数据。
+  UPDATE Personnel
+  SET salary = CASE WHEN salary >= 300000 THEN salary * 0.9
+  									WHEN salary >= 250000 AND salary < 280000  THEN salary * 1.2
+               ELSE salary END;
+  ```
 
-- null 值处理
+###### 嵌套子查询
 
-  - ```sql
-    CASE 
-    	WHEN title IS NULL 
-    		THEN  'unknown'
-        ELSE title
-    END
-    ```
+- ```SQL
+  SELECT course_name,
+         CASE
+             WHEN course_id IN (SELECT course_id
+                                FROM opencourses
+                                WHERE month = 201806) THEN 1
+             ELSE 0 END AS '6月',
+         CASE
+             WHEN course_id IN (SELECT course_id
+                                FROM opencourses
+                                WHERE month = 201807) THEN 1
+             ELSE 0 END AS '7月',
+         CASE
+             WHEN course_id IN (SELECT course_id
+                                FROM opencourses
+                                WHERE month = 201808) THEN 1
+             ELSE 0 END AS '8月'
+  FROM coursemaster
+  ```
 
-##### 14：LIMIT：分页查询
+###### CASE 表达式中使用聚合函数
+
+```sql
+-- CASE WHEN COUNT(*) = 1 ... THEN ... 区分出是否加入多个社团
+SELECT std_id,
+       CASE
+           WHEN COUNT(*) = 1 THEN MAX(club_id)
+           ELSE MAX(CASE
+                        WHEN main_club_flag = 'Y' THEN club_id
+                        ELSE NULL END)
+           END AS main_club
+FROM Studentclub
+GROUP BY std_id;
+```
+
+##### 15：LIMIT：分页查询
 
 - SELECT * FROM emp LIMIT 2;      从第0条开始（没有数据），向下查询2条，实际是：0, 2
 - SELECT * FROM emp LIMIT 2, 4;  
@@ -449,7 +584,7 @@
   - 当第一个值比较大时，尽量使用id 的方式高效分页，否则可能会逐行扫描到指定数值后，再进行分页，效率较慢。
   - **OFFSET**：偏移量的下一个值开始取；
 
-##### 15：SELECT 语句的执行过程
+##### 16：SELECT 语句的执行过程
 
 ###### from->where->group by->having->select-->order by->limit
 
@@ -461,7 +596,7 @@
 6. OERDER BY ：对结果集进行排序
 7. LIMIT 子句：分页
 
-##### 16：SQL 语句的优化
+##### 17：SQL 语句的优化
 
 1. SELECT子句：少用\*号，尽量取字段名称
    - 在解析的过程中, 会将依次转换成所有的列名
